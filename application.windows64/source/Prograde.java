@@ -3,8 +3,6 @@ import processing.data.*;
 import processing.event.*; 
 import processing.opengl.*; 
 
-import com.hamoid.*; 
-
 import java.util.HashMap; 
 import java.util.ArrayList; 
 import java.io.File; 
@@ -20,9 +18,9 @@ public class Prograde extends PApplet {
 //Minim minim;
 //AudioPlayer laser;
 //AudioPlayer minigun;
+//import com.hamoid.*;
 
-
-VideoExport videoExport;
+//VideoExport videoExport;
 ArrayList<Bullet> bullets = new ArrayList<Bullet>();
 Ship ship;
 ArrayList<AI> enemies = new ArrayList<AI>();
@@ -31,7 +29,7 @@ float arenaWidth, arenaHeight;
 float tick = 1;
 float zoom = 1;
 public void setup() {
-  videoExport = new VideoExport(this);
+  //videoExport = new VideoExport(this);
   noCursor();
   arenaHeight=20000;
   arenaWidth=20000;
@@ -47,7 +45,7 @@ public void setup() {
   }
   //enemies.add(new AI(random(0, width), random(0, height)));
   //frameRate(99999);
- videoExport.startMovie();
+ //videoExport.startMovie();
 }
 int frames =0;
 float delta, t1, t2;
@@ -103,7 +101,7 @@ public void draw() {
   popMatrix();
   retical();
   frames++;
-  videoExport.saveFrame();
+  //videoExport.saveFrame();
 }
 public float smoothing(float start, float end, float change) {
   float dy = end-start;
@@ -118,8 +116,8 @@ boolean [] keys = new boolean [128];
 public void keyPressed() {
   key = Character.toLowerCase(key);
   if (key == 'q') {
-    videoExport.endMovie();
-    exit();
+    //videoExport.endMovie();
+    //exit();
   }
   if (key == 'w') {
     up = true;

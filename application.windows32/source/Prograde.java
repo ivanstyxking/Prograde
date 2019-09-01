@@ -3,6 +3,8 @@ import processing.data.*;
 import processing.event.*; 
 import processing.opengl.*; 
 
+import com.hamoid.*; 
+
 import java.util.HashMap; 
 import java.util.ArrayList; 
 import java.io.File; 
@@ -12,12 +14,15 @@ import java.io.InputStream;
 import java.io.OutputStream; 
 import java.io.IOException; 
 
-public class spaceship_game extends PApplet {
+public class Prograde extends PApplet {
 
 //import ddf.minim.*;
 //Minim minim;
 //AudioPlayer laser;
 //AudioPlayer minigun;
+
+
+VideoExport videoExport;
 ArrayList<Bullet> bullets = new ArrayList<Bullet>();
 Ship ship;
 ArrayList<AI> enemies = new ArrayList<AI>();
@@ -26,6 +31,7 @@ float arenaWidth, arenaHeight;
 float tick = 1;
 float zoom = 1;
 public void setup() {
+  videoExport = new VideoExport(this);
   noCursor();
   arenaHeight=20000;
   arenaWidth=20000;
@@ -33,14 +39,15 @@ public void setup() {
   // laser = minim.loadFile("laser.wav");
   // minigun = minim.loadFile("laser2.wav");
   ship = new Ship(width/2, height/2);
-  //fullScreen(OPENGL);
-  
+  //
+  fullScreen(OPENGL);
   frame.setResizable(true);
   for (int i=0; i<=5000; i++) {
     stars.add(new Star(random(0, arenaWidth), random(0, arenaHeight), random(-20, 120)));
   }
   //enemies.add(new AI(random(0, width), random(0, height)));
   //frameRate(99999);
+ videoExport.startMovie();
 }
 int frames =0;
 float delta, t1, t2;
@@ -51,6 +58,7 @@ public void draw() {
   translate(zoom*-ship.position.x+width/2, zoom*-ship.position.y+height/2);
   scale(zoom);
   background(0);
+  rect(0,0,arenaWidth,arenaHeight);
   for (int i=0; i<stars.size(); i++) {
     Star star = stars.get(i);
     star.display();
@@ -95,6 +103,7 @@ public void draw() {
   popMatrix();
   retical();
   frames++;
+  videoExport.saveFrame();
 }
 public float smoothing(float start, float end, float change) {
   float dy = end-start;
@@ -108,6 +117,10 @@ boolean up, down, left, right;
 boolean [] keys = new boolean [128];
 public void keyPressed() {
   key = Character.toLowerCase(key);
+  if (key == 'q') {
+    videoExport.endMovie();
+    exit();
+  }
   if (key == 'w') {
     up = true;
   }
@@ -169,9 +182,11 @@ class AI {
   int a;
   PVector position, velocity, acceleration;
   PVector difference;
-  float diam, health, sat;
+  float diam, health, sat,mass,density;
   Bullet B;
   AI(float x, float y, float D_) {
+    density = 10000;
+    mass = D_/2*sq(D_/2) * density;
     position = new PVector(x, y);
     velocity = new PVector(0, 0);
     acceleration = new PVector(0, 0);
@@ -193,11 +208,11 @@ class AI {
     if (dist<200*diam) {
       difference = PVector.sub(ship.position, this.position);
       acceleration = PVector.fromAngle(difference.heading());
-      acceleration.setMag(1/(0.2f*diam));
+      acceleration.setMag(2/(0.2f*diam));
       //this.velocity.limit(2);
       if (dist>50) {
         velocity.add(acceleration);
-        velocity.limit(map(diam, 0, 64, 64, 1));
+        velocity.limit(map(diam, 0, 64, 128, 32));
         //position.add(this.velocity);
       }
     }
@@ -215,7 +230,7 @@ class AI {
       position.y=arenaHeight;
     }
     if ((frames%PApplet.parseInt(map(diam, 64, 2, 24, 1)) == 0)&&(dist<200*diam)&&difference.heading()-velocity.heading()<0.002f*diam) {
-      float pV = map(diam, 0, 64, 100, 20)+velocity.mag();
+      float pV = diam + velocity.mag();
       bullets.add(new Bullet(pV, velocity.x, velocity.y, diam/2, targetBearing(ship, pV) +random(-PI/diam/10, PI/diam/10), position.x, position.y, true, 1, this));
     }
     float distBullet;
@@ -291,6 +306,7 @@ class Bullet {
     velocity.y+=vy;
     this.position = new PVector(x, y);
     this.hostile = hostile;
+    //ship.velocity.sub(PVector.mult(velocity,mass/ship.mass));
   }
   Bullet(float vel, float vx, float vy, float mass, float heading, float x, float y, boolean hostile, int type, AI ai_) {
     ai = ai_;
@@ -304,11 +320,12 @@ class Bullet {
     velocity.y+=vy;
     this.position = new PVector(x, y);
     this.hostile = hostile;
+    //ai.velocity.sub(PVector.mult(velocity,mass/ai.mass));
   }
   public void update() {
     position.add(velocity);
     if ((position.y>arenaHeight)||(position.y<0)) {
-      for (int i=0; i<velocity.mag()/20; i++) {
+      for (int i=0; i<velocity.mag()/10; i++) {
         sparkfx.spawn(position.x, position.y, random(2*PI), random(mass*velocity.mag()/20), map(velocity.mag(), 0, vel, 0, 0.9f));
       }
       if (position.y>arenaHeight) {
@@ -324,7 +341,7 @@ class Bullet {
       }
     }
     if ((position.x>arenaWidth)||(position.x<0)) {
-      for (int i=0; i<velocity.mag()/20; i++) {
+      for (int i=0; i<velocity.mag()/10; i++) {
         sparkfx.spawn(position.x, position.y, random(2*PI), random(mass*velocity.mag()/20), map(velocity.mag(), 0, vel, 0, 0.9f));
       }
       if (position.x>arenaWidth) {
@@ -350,7 +367,7 @@ class Bullet {
       if (hostile) {
         stroke(map(velocity.mag(), 0, vel, 100, 0), 255, 255);
       } else {
-        stroke(map(velocity.mag(), 0, vel, 0, 210), (map(velocity.mag(), vel, 0, 0, 255)), 255);
+        stroke(map(velocity.mag(), 0, vel, 0, 210), (map(velocity.mag(), vel, 0, 128, 255)), 255);
       }
       break;
     case 2:
@@ -366,11 +383,12 @@ class Bullet {
 }
 public class Ship {
   PVector position, velocity, acceleration;
-  float heading, health, shieldAlpha, shieldDiam, centrepetalVel, acc;
+  float heading, health, shieldAlpha, shieldDiam, centrepetalVel, acc, mass;
   boolean newtonian = true;
   int cooldown=0;
   Ship(float x, float y) {
-    acc=0.2f;
+    mass = 5000;
+    acc=0.4f;
     heading = 0;
     centrepetalVel = 0;
     acceleration = new PVector(0, 0);
@@ -388,25 +406,25 @@ public class Ship {
     if (cooldown>0) {
       cooldown--;
     }
-    if (keys[' ']) {
-      if (cooldown<=0) {
-        // laser.play();
-        //laser.rewind();
-        for (int i=0; i<1; i++) {
-          bullets.add(new Bullet(750+random(-200,200), velocity.x, velocity.y, 1, difference.heading()+0.03f*randomGaussian(), ship.position.x, ship.position.y, false, 1));
-        }
-        cooldown=1;
-        //bullets.add(new Bullet(20+ship.velocity.mag(), ship.heading+random(-PI/32, PI/32), ship.position.x, ship.position.y, false, 1));
-      }
-    }
     if (mousePressed) {
+      if (leftgun) {
+        if (cooldown<=0) {
+          // laser.play();
+          //laser.rewind();
+          for (int i=0; i<1; i++) {
+            bullets.add(new Bullet(500+random(-200, 200)+velocity.mag(), velocity.x, velocity.y, 2, difference.heading()+0.03f*randomGaussian(), ship.position.x, ship.position.y, false, 1));
+          }
+          cooldown=1;
+          //bullets.add(new Bullet(20+ship.velocity.mag(), ship.heading+random(-PI/32, PI/32), ship.position.x, ship.position.y, false, 1));
+        }
+      }
       if (rightgun) {
         if (frames%10==0) {
           //minigun.play();
           // minigun.rewind();
 
           //difference.sub(this.position);
-          bullets.add(new Bullet(150+random(-4, 4), 0, 0, 20, difference.heading()+randomGaussian()*PI/128, ship.position.x, ship.position.y, false, 2));
+          bullets.add(new Bullet(velocity.mag()+150+random(-4, 4), 0, 0, 20, difference.heading()+randomGaussian()*PI/128, ship.position.x, ship.position.y, false, 2));
           //bullets.add(new Bullet(60+ship.velocity.mag(), 0, 0, 0.5, difference.heading()+random(-PI/48, PI/48), ship.position.x, ship.position.y, false, 2));
         }
       }
@@ -430,7 +448,7 @@ public class Ship {
     }
     acceleration = PVector.fromAngle(heading);
     if (up) {
-      acc=0.1f;
+      acc=0.2f;
       acceleration.setMag(acc);
       acceleration.limit(10);
     } else {
@@ -443,7 +461,7 @@ public class Ship {
       velocity.mult(0.9f);
     }
     velocity.add(acceleration);
-    velocity.limit(32);
+    velocity.limit(64);
     float k = -0.2f;
     float mu = 0.9f;
     if (position.x>arenaWidth) {
@@ -462,17 +480,28 @@ public class Ship {
       position.y=arenaHeight;
       //velocity.x*=mu;
     }
+    float distBullet;
     for (int i=0; i<bullets.size(); i++) {
       Bullet b = bullets.get(i);
-      float distBullet = PVector.dist(this.position, b.position);
-      if ((distBullet<shieldDiam/2)&&(b.hostile)) {
-        health-=bullets.get(i).velocity.mag()*bullets.get(i).mass;
-        for (int q = 0; q<b.velocity.mag(); q++) {
-          sparkfx.spawn(position.x, position.y, b.velocity.heading()+randomGaussian()/b.velocity.magSq(), random(0, b.velocity.mag()/2), map(b.velocity.mag(), 0, b.vel, 0.4f, 0));
+      for (int j=0; j<96; j++) {
+        distBullet = PVector.dist(this.position, PVector.sub(b.position, PVector.mult(b.velocity, map(j, 0, 96, 0, 1))));
+        if ((distBullet<shieldDiam)&&b.ai!=null) {
+          health-=b.velocity.mag()*bullets.get(i).mass;
+          if (health<=0) {
+            for (int q=0; q<128; q++) {
+              sparkfx.spawn(position.x, position.y, random(2*PI), random(0, 64), 0.6f);
+            }
+          }
+          for (int l=0; l<b.velocity.mag()*5; l++) {
+            sparkfx.spawn(position.x, position.y, b.velocity.heading()+random(-1, 1)/b.velocity.magSq(), random(0, b.velocity.mag()/5), map(b.velocity.mag(), 0, b.vel, 0, 0.9f));
+          }
+          if (bullets.get(i).type!=0) {
+            bullets.remove(i);
+          }
+          //  bullets.remove(i);
+          shieldAlpha=255;
+          break;
         }
-        bullets.remove(i);
-        shieldAlpha=255;
-        //break;
       }
     }
     shieldAlpha-=8;
@@ -480,7 +509,9 @@ public class Ship {
       shieldAlpha=0;
     }
     position.add(velocity);
-    sparkfx.spawn(position.x, position.y, heading-PI+random(-0.01f, 0.01f), 2, 0.6f);
+    for (int i=0; i<10*acceleration.mag(); i++) {
+      sparkfx.spawn(position.x, position.y, heading-PI+random(-0.015f, 0.015f), 32*acceleration.mag()+random(-1, 1), 0.6f);
+    }
   }
   int a; 
   int b;
@@ -531,16 +562,18 @@ class Star {
     p=new PVector(x, y, z);
   }
   public void display() {
-    x1 = p.x+(p.z*0.01f*(ship.position.x-arenaWidth/2));
-    y1 = p.y+(p.z*0.01f*(ship.position.y-arenaHeight/2));
-    strokeWeight(map(p.z, -20, 50, 2, 1));
-    stroke(255);
-    pushMatrix();
-    //scale(p.z);
-    stroke(c);
-    line(x1, y1, x1-ship.velocity.x, y1-ship.velocity.y);
+    x1 = p.x+(p.z*0.005f*(ship.position.x-arenaWidth/2));
+    y1 = p.y+(p.z*0.005f*(ship.position.y-arenaHeight/2));
+    if (onScreen(x1, y1)) {
+      strokeWeight(map(p.z, -20, 100, 3, 1));
+      stroke(255);
+      pushMatrix();
+      //scale(p.z);
+      stroke(c);
+      line(x1, y1, x1-ship.velocity.x, y1-ship.velocity.y);
 
-    popMatrix();
+      popMatrix();
+    }
   }
 }
 SparkFX sparkfx = new SparkFX();
@@ -551,6 +584,9 @@ class SparkFX {
   }
   public void spawn(float x_, float y_, float rads_, float mag, float h_) {
     parts.add(new Spark(x_, y_, rads_, mag, 1, h_));
+  }
+  public void vectorSpawn(float x_, float y_, PVector pV_, float h_){
+    parts.add(new Spark(x_, y_, pV_, 1, h_));
   }
   public void update() {
     for (int i=0; i<parts.size(); i++) {
@@ -587,14 +623,40 @@ class SparkFX {
         }
       }
     }
+    Spark(float x, float y, PVector pV, float m_, float hue_) {
+      invMass = 1/(abs(m_+0.000000001f));
+      colorMode(HSB, 1);
+      c = color(hue_, 1, 1);
+      p = new PVector(x, y);
+      v = pV;
+      if ((p.y>arenaHeight)||(p.y<0)) {
+        if (p.y>arenaHeight) {
+          p.y=arenaHeight+v.y/2;
+        }
+        if (p.y<0) {
+          p.y=v.y/2;
+        }
+      }
+
+      if ((p.x>arenaWidth)||(p.x<0)) {
+        if (p.x>arenaWidth) {
+          p.x=arenaWidth+v.x/2;
+        }
+        if (p.x<0) {
+          p.x=v.x/2;
+        }
+      }
+    }
     public void update() {
       a = PVector.fromAngle(v.heading()-randomGaussian()*PI);
       a.setMag(random(0.2f));
       v.add(a);
       p.add(PVector.mult(v, tick));
       v.mult(.99f);
-      stroke(lerpColor(c, color(0, 1, 1, 0.5f), map(v.mag(), V, 0, 0, 1)));
-      line(p.x, p.y, p.x-v.x, p.y-v.y);
+      if (onScreen(p.x, p.y)) {
+        stroke(lerpColor(c, color(0, 1, 1, 0.5f), map(v.mag(), V, 0, 0, 1)));
+        line(p.x, p.y, p.x-v.x, p.y-v.y);
+      }
       if (v.mag()<1) {
         parts.remove(this);
       }
@@ -620,11 +682,11 @@ class SparkFX {
   }
 }
 public boolean onScreen(float x, float y) {
-  return (abs(x-ship.position.x)<width && (abs(y-ship.position.y)<height));
+  return (abs(x-ship.position.x)<width/zoom && (abs(y-ship.position.y)<height/zoom));
 }
-  public void settings() {  size(displayWidth, displayHeight, OPENGL); }
+  public void settings() {  fullScreen(OPENGL); }
   static public void main(String[] passedArgs) {
-    String[] appletArgs = new String[] { "spaceship_game" };
+    String[] appletArgs = new String[] { "Prograde" };
     if (passedArgs != null) {
       PApplet.main(concat(appletArgs, passedArgs));
     } else {

@@ -2,6 +2,9 @@
 //Minim minim;
 //AudioPlayer laser;
 //AudioPlayer minigun;
+import com.hamoid.*;
+
+VideoExport videoExport;
 ArrayList<Bullet> bullets = new ArrayList<Bullet>();
 Ship ship;
 ArrayList<AI> enemies = new ArrayList<AI>();
@@ -10,6 +13,7 @@ float arenaWidth, arenaHeight;
 float tick = 1;
 float zoom = 1;
 void setup() {
+  videoExport = new VideoExport(this);
   noCursor();
   arenaHeight=20000;
   arenaWidth=20000;
@@ -18,13 +22,14 @@ void setup() {
   // minigun = minim.loadFile("laser2.wav");
   ship = new Ship(width/2, height/2);
   //fullScreen(OPENGL);
-  size(displayWidth, displayHeight, OPENGL);
+  fullScreen(OPENGL);
   frame.setResizable(true);
   for (int i=0; i<=5000; i++) {
     stars.add(new Star(random(0, arenaWidth), random(0, arenaHeight), random(-20, 120)));
   }
   //enemies.add(new AI(random(0, width), random(0, height)));
   //frameRate(99999);
+ videoExport.startMovie();
 }
 int frames =0;
 float delta, t1, t2;
@@ -35,6 +40,7 @@ void draw() {
   translate(zoom*-ship.position.x+width/2, zoom*-ship.position.y+height/2);
   scale(zoom);
   background(0);
+  rect(0,0,arenaWidth,arenaHeight);
   for (int i=0; i<stars.size(); i++) {
     Star star = stars.get(i);
     star.display();
@@ -79,6 +85,7 @@ void draw() {
   popMatrix();
   retical();
   frames++;
+  videoExport.saveFrame();
 }
 float smoothing(float start, float end, float change) {
   float dy = end-start;
@@ -92,6 +99,10 @@ boolean up, down, left, right;
 boolean [] keys = new boolean [128];
 void keyPressed() {
   key = Character.toLowerCase(key);
+  if (key == 'q') {
+    videoExport.endMovie();
+    exit();
+  }
   if (key == 'w') {
     up = true;
   }

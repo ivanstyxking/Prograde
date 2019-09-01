@@ -1,10 +1,11 @@
 public class Ship {
   PVector position, velocity, acceleration;
-  float heading, health, shieldAlpha, shieldDiam, centrepetalVel, acc;
+  float heading, health, shieldAlpha, shieldDiam, centrepetalVel, acc, mass;
   boolean newtonian = true;
   int cooldown=0;
   Ship(float x, float y) {
-    acc=0.2;
+    mass = 5000;
+    acc=0.4;
     heading = 0;
     centrepetalVel = 0;
     acceleration = new PVector(0, 0);
@@ -22,25 +23,25 @@ public class Ship {
     if (cooldown>0) {
       cooldown--;
     }
-    if (keys[' ']) {
-      if (cooldown<=0) {
-        // laser.play();
-        //laser.rewind();
-        for (int i=0; i<1; i++) {
-          bullets.add(new Bullet(750+random(-200,200), velocity.x, velocity.y, 1, difference.heading()+0.03*randomGaussian(), ship.position.x, ship.position.y, false, 1));
-        }
-        cooldown=1;
-        //bullets.add(new Bullet(20+ship.velocity.mag(), ship.heading+random(-PI/32, PI/32), ship.position.x, ship.position.y, false, 1));
-      }
-    }
     if (mousePressed) {
+      if (leftgun) {
+        if (cooldown<=0) {
+          // laser.play();
+          //laser.rewind();
+          for (int i=0; i<1; i++) {
+            bullets.add(new Bullet(500+random(-200, 200)+velocity.mag(), velocity.x, velocity.y, 2, difference.heading()+0.03*randomGaussian(), ship.position.x, ship.position.y, false, 1));
+          }
+          cooldown=1;
+          //bullets.add(new Bullet(20+ship.velocity.mag(), ship.heading+random(-PI/32, PI/32), ship.position.x, ship.position.y, false, 1));
+        }
+      }
       if (rightgun) {
         if (frames%10==0) {
           //minigun.play();
           // minigun.rewind();
 
           //difference.sub(this.position);
-          bullets.add(new Bullet(150+random(-4, 4), 0, 0, 20, difference.heading()+randomGaussian()*PI/128, ship.position.x, ship.position.y, false, 2));
+          bullets.add(new Bullet(velocity.mag()+150+random(-4, 4), 0, 0, 20, difference.heading()+randomGaussian()*PI/128, ship.position.x, ship.position.y, false, 2));
           //bullets.add(new Bullet(60+ship.velocity.mag(), 0, 0, 0.5, difference.heading()+random(-PI/48, PI/48), ship.position.x, ship.position.y, false, 2));
         }
       }
@@ -64,7 +65,7 @@ public class Ship {
     }
     acceleration = PVector.fromAngle(heading);
     if (up) {
-      acc=0.1;
+      acc=0.2;
       acceleration.setMag(acc);
       acceleration.limit(10);
     } else {
@@ -77,7 +78,7 @@ public class Ship {
       velocity.mult(0.9);
     }
     velocity.add(acceleration);
-    velocity.limit(32);
+    velocity.limit(64);
     float k = -0.2;
     float mu = 0.9;
     if (position.x>arenaWidth) {
@@ -96,17 +97,28 @@ public class Ship {
       position.y=arenaHeight;
       //velocity.x*=mu;
     }
+    float distBullet;
     for (int i=0; i<bullets.size(); i++) {
       Bullet b = bullets.get(i);
-      float distBullet = PVector.dist(this.position, b.position);
-      if ((distBullet<shieldDiam/2)&&(b.hostile)) {
-        health-=bullets.get(i).velocity.mag()*bullets.get(i).mass;
-        for (int q = 0; q<b.velocity.mag(); q++) {
-          sparkfx.spawn(position.x, position.y, b.velocity.heading()+randomGaussian()/b.velocity.magSq(), random(0, b.velocity.mag()/2), map(b.velocity.mag(), 0, b.vel, 0.4, 0));
+      for (int j=0; j<96; j++) {
+        distBullet = PVector.dist(this.position, PVector.sub(b.position, PVector.mult(b.velocity, map(j, 0, 96, 0, 1))));
+        if ((distBullet<shieldDiam)&&b.ai!=null) {
+          health-=b.velocity.mag()*bullets.get(i).mass;
+          if (health<=0) {
+            for (int q=0; q<128; q++) {
+              sparkfx.spawn(position.x, position.y, random(2*PI), random(0, 64), 0.6);
+            }
+          }
+          for (int l=0; l<b.velocity.mag()*5; l++) {
+            sparkfx.spawn(position.x, position.y, b.velocity.heading()+random(-1, 1)/b.velocity.magSq(), random(0, b.velocity.mag()/5), map(b.velocity.mag(), 0, b.vel, 0, 0.9));
+          }
+          if (bullets.get(i).type!=0) {
+            bullets.remove(i);
+          }
+          //  bullets.remove(i);
+          shieldAlpha=255;
+          break;
         }
-        bullets.remove(i);
-        shieldAlpha=255;
-        //break;
       }
     }
     shieldAlpha-=8;
@@ -114,7 +126,9 @@ public class Ship {
       shieldAlpha=0;
     }
     position.add(velocity);
-    sparkfx.spawn(position.x, position.y, heading-PI+random(-0.01, 0.01), 2, 0.6);
+    for (int i=0; i<10*acceleration.mag(); i++) {
+      sparkfx.spawn(position.x, position.y, heading-PI+random(-0.015, 0.015), 32*acceleration.mag()+random(-1, 1), 0.6);
+    }
   }
   color a; 
   color b;

@@ -2,9 +2,11 @@ class AI {
   color a;
   PVector position, velocity, acceleration;
   PVector difference;
-  float diam, health, sat;
+  float diam, health, sat,mass,density;
   Bullet B;
   AI(float x, float y, float D_) {
+    density = 10000;
+    mass = D_/2*sq(D_/2) * density;
     position = new PVector(x, y);
     velocity = new PVector(0, 0);
     acceleration = new PVector(0, 0);
@@ -26,11 +28,11 @@ class AI {
     if (dist<200*diam) {
       difference = PVector.sub(ship.position, this.position);
       acceleration = PVector.fromAngle(difference.heading());
-      acceleration.setMag(1/(0.2*diam));
+      acceleration.setMag(2/(0.2*diam));
       //this.velocity.limit(2);
       if (dist>50) {
         velocity.add(acceleration);
-        velocity.limit(map(diam, 0, 64, 64, 1));
+        velocity.limit(map(diam, 0, 64, 128, 32));
         //position.add(this.velocity);
       }
     }
@@ -48,7 +50,7 @@ class AI {
       position.y=arenaHeight;
     }
     if ((frames%int(map(diam, 64, 2, 24, 1)) == 0)&&(dist<200*diam)&&difference.heading()-velocity.heading()<0.002*diam) {
-      float pV = map(diam, 0, 64, 100, 20)+velocity.mag();
+      float pV = diam + velocity.mag();
       bullets.add(new Bullet(pV, velocity.x, velocity.y, diam/2, targetBearing(ship, pV) +random(-PI/diam/10, PI/diam/10), position.x, position.y, true, 1, this));
     }
     float distBullet;

@@ -119,9 +119,6 @@ public class Ship {
           shieldAlpha=255;
           break;
         }
-
-
-        //break;
       }
     }
     shieldAlpha-=8;

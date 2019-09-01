@@ -2,9 +2,9 @@
 //Minim minim;
 //AudioPlayer laser;
 //AudioPlayer minigun;
-//import com.hamoid.*;
+import com.hamoid.*;
 
-//VideoExport videoExport;
+VideoExport videoExport;
 ArrayList<Bullet> bullets = new ArrayList<Bullet>();
 Ship ship;
 ArrayList<AI> enemies = new ArrayList<AI>();
@@ -13,7 +13,7 @@ float arenaWidth, arenaHeight;
 float tick = 1;
 float zoom = 1;
 void setup() {
-  //videoExport = new VideoExport(this);
+  videoExport = new VideoExport(this);
   noCursor();
   arenaHeight=20000;
   arenaWidth=20000;
@@ -29,7 +29,7 @@ void setup() {
   }
   //enemies.add(new AI(random(0, width), random(0, height)));
   //frameRate(99999);
-  //videoExport.startMovie();
+ videoExport.startMovie();
 }
 int frames =0;
 float delta, t1, t2;
@@ -85,7 +85,7 @@ void draw() {
   popMatrix();
   retical();
   frames++;
-  //videoExport.saveFrame();
+  videoExport.saveFrame();
 }
 float smoothing(float start, float end, float change) {
   float dy = end-start;
@@ -98,11 +98,11 @@ float smoothing(float start, float end, float change) {
 boolean up, down, left, right;
 boolean [] keys = new boolean [128];
 void keyPressed() {
-  //key = Character.toLowerCase(key);
-  //if (key == 'q') {
-    //ideoExport.endMovie();
-    //exit();
-  //}
+  key = Character.toLowerCase(key);
+  if (key == 'q') {
+    videoExport.endMovie();
+    exit();
+  }
   if (key == 'w') {
     up = true;
   }

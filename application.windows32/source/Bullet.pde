@@ -16,6 +16,7 @@ class Bullet {
     velocity.y+=vy;
     this.position = new PVector(x, y);
     this.hostile = hostile;
+    //ship.velocity.sub(PVector.mult(velocity,mass/ship.mass));
   }
   Bullet(float vel, float vx, float vy, float mass, float heading, float x, float y, boolean hostile, int type, AI ai_) {
     ai = ai_;
@@ -29,11 +30,12 @@ class Bullet {
     velocity.y+=vy;
     this.position = new PVector(x, y);
     this.hostile = hostile;
+    //ai.velocity.sub(PVector.mult(velocity,mass/ai.mass));
   }
   void update() {
     position.add(velocity);
     if ((position.y>arenaHeight)||(position.y<0)) {
-      for (int i=0; i<velocity.mag()/20; i++) {
+      for (int i=0; i<velocity.mag()/10; i++) {
         sparkfx.spawn(position.x, position.y, random(2*PI), random(mass*velocity.mag()/20), map(velocity.mag(), 0, vel, 0, 0.9));
       }
       if (position.y>arenaHeight) {
@@ -49,7 +51,7 @@ class Bullet {
       }
     }
     if ((position.x>arenaWidth)||(position.x<0)) {
-      for (int i=0; i<velocity.mag()/20; i++) {
+      for (int i=0; i<velocity.mag()/10; i++) {
         sparkfx.spawn(position.x, position.y, random(2*PI), random(mass*velocity.mag()/20), map(velocity.mag(), 0, vel, 0, 0.9));
       }
       if (position.x>arenaWidth) {
@@ -75,7 +77,7 @@ class Bullet {
       if (hostile) {
         stroke(map(velocity.mag(), 0, vel, 100, 0), 255, 255);
       } else {
-        stroke(map(velocity.mag(), 0, vel, 0, 210), (map(velocity.mag(), vel, 0, 0, 255)), 255);
+        stroke(map(velocity.mag(), 0, vel, 0, 210), (map(velocity.mag(), vel, 0, 128, 255)), 255);
       }
       break;
     case 2:

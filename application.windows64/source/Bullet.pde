@@ -70,24 +70,30 @@ class Bullet {
     life++;
   }
   void display() {
-    colorMode(HSB, 255);
-    switch(type) {
-    case 1:
-      strokeWeight(map(mass, 0, 30, 0.5, 5));
-      if (hostile) {
-        stroke(map(velocity.mag(), 0, vel, 100, 0), 255, 255);
-      } else {
-        stroke(map(velocity.mag(), 0, vel, 0, 210), (map(velocity.mag(), vel, 0, 128, 255)), 255);
+    
+    if (onScreen(position.x, position.y)) {
+      for (int i=0; i<velocity.mag()/100; i++) {
+        sparkfx.spawn(position.x, position.y, velocity.heading()+0.005*random(-1,1), velocity.mag()*0.5, map(velocity.mag(), 0, vel, 0, 0.9));
       }
-      break;
-    case 2:
-      strokeWeight(3);
-      if (hostile) {
-      } else {
-        stroke(map(velocity.mag(), 0, vel, 0, 210), 128, map(velocity.mag(), 10, 0, 255, 0));
+      colorMode(HSB, 255);
+      switch(type) {
+      case 1:
+        strokeWeight(map(mass, 0, 30, 0.5, 5));
+        if (hostile) {
+          stroke(map(velocity.mag(), 0, vel, 100, 0), 255, 255);
+        } else {
+          stroke(map(velocity.mag(), 0, vel, 0, 210), (map(velocity.mag(), vel, 0, 128, 255)), 255);
+        }
+        break;
+      case 2:
+        strokeWeight(3);
+        if (hostile) {
+        } else {
+          stroke(map(velocity.mag(), 0, vel, 0, 210), 128, map(velocity.mag(), 10, 0, 255, 0));
+        }
+        break;
       }
-      break;
+      line(position.x, position.y, position.x-velocity.x, position.y-velocity.y);
     }
-    line(position.x, position.y, position.x-velocity.x, position.y-velocity.y);
   }
 }

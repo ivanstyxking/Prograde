@@ -180,7 +180,7 @@ class AI {
   int a;
   PVector position, velocity, acceleration;
   PVector difference;
-  float diam, health, sat,mass,density;
+  float diam, health, sat, mass, density;
   Bullet B;
   AI(float x, float y, float D_) {
     density = 10000;
@@ -194,7 +194,7 @@ class AI {
     colorMode(HSB, 255);
     a = color(100, 255, 255);
   }
-    public float targetBearing(Ship target, float pV) {
+  public float targetBearing(Ship target, float pV) {
     PVector d = PVector.sub(target.position, position);
     float t = PVector.div(d, pV).mag();
     PVector h = PVector.add(target.position, PVector.mult(PVector.sub(target.velocity, velocity), t));
@@ -239,8 +239,8 @@ class AI {
         if ((distBullet<diam)&&b.ai!=this) {
           B = bullets.get(i);
           health-=b.velocity.mag()*bullets.get(i).mass;
-          for (int k=0; k<b.velocity.mag(); k++) {
-            sparkfx.spawn(position.x, position.y, B.velocity.heading()+random(-1,1)/B.velocity.magSq(), random(0, b.velocity.mag()/5), map(B.velocity.mag(), 0, b.vel, 0, 0.9f));
+          for (int k=0; k<b.velocity.mag()*b.mass*0.5f; k++) {
+            sparkfx.spawn(position.x, position.y, B.velocity.heading()+random(-1, 1)/B.velocity.magSq(), random(0, b.velocity.mag()/5), map(B.velocity.mag(), 0, b.vel, 0, 0.9f));
           }
           if (bullets.get(i).type!=1) {
             bullets.remove(i);
@@ -262,28 +262,30 @@ class AI {
     }
   }
   public void display() {
-    colorMode(HSB, 255);
-    strokeWeight(map(sat, 0, 255, 3, 2));
-    stroke(100, sat, 255);
-    pushMatrix();
-    translate(position.x, position.y);
-    fill(100, 255, 255, 128);
-    text((int)health, diam, diam);
-    rotate(velocity.heading()-PI/2);
-    fill(100, 255, 0, 64);
-    stroke(a);
-    beginShape();
-    vertex(0,0);
-    vertex(diam/2,diam/2);
-    vertex(diam/3,-diam/3);
-    vertex(0,0);
-    vertex(-diam/3,-diam/3);
-    vertex(-diam/2,diam/2);
-    vertex(0,0);
-    endShape();
-    noFill();
-    popMatrix();
-    //ellipse(position.x, position.y, diam, diam);
+    if (onScreen(position.x, position.y)) {
+      colorMode(HSB, 255);
+      strokeWeight(map(sat, 0, 255, 3, 2));
+      stroke(100, sat, 255);
+      pushMatrix();
+      translate(position.x, position.y);
+      fill(100, 255, 255, 128);
+      text((int)health, diam, diam);
+      rotate(velocity.heading()-PI/2);
+      fill(100, 255, 0, 64);
+      stroke(a);
+      beginShape();
+      vertex(0, 0);
+      vertex(diam/2, diam/2);
+      vertex(diam/3, -diam/3);
+      vertex(0, 0);
+      vertex(-diam/3, -diam/3);
+      vertex(-diam/2, diam/2);
+      vertex(0, 0);
+      endShape();
+      noFill();
+      popMatrix();
+      //ellipse(position.x, position.y, diam, diam);
+    }
   }
 }
 class Bullet {
@@ -358,32 +360,39 @@ class Bullet {
     life++;
   }
   public void display() {
-    colorMode(HSB, 255);
-    switch(type) {
-    case 1:
-      strokeWeight(map(mass, 0, 30, 0.5f, 5));
-      if (hostile) {
-        stroke(map(velocity.mag(), 0, vel, 100, 0), 255, 255);
-      } else {
-        stroke(map(velocity.mag(), 0, vel, 0, 210), (map(velocity.mag(), vel, 0, 128, 255)), 255);
+    
+    if (onScreen(position.x, position.y)) {
+      for (int i=0; i<velocity.mag()/100; i++) {
+        sparkfx.spawn(position.x, position.y, velocity.heading()+0.005f*random(-1,1), velocity.mag()*0.5f, map(velocity.mag(), 0, vel, 0, 0.9f));
       }
-      break;
-    case 2:
-      strokeWeight(3);
-      if (hostile) {
-      } else {
-        stroke(map(velocity.mag(), 0, vel, 0, 210), 128, map(velocity.mag(), 10, 0, 255, 0));
+      colorMode(HSB, 255);
+      switch(type) {
+      case 1:
+        strokeWeight(map(mass, 0, 30, 0.5f, 5));
+        if (hostile) {
+          stroke(map(velocity.mag(), 0, vel, 100, 0), 255, 255);
+        } else {
+          stroke(map(velocity.mag(), 0, vel, 0, 210), (map(velocity.mag(), vel, 0, 128, 255)), 255);
+        }
+        break;
+      case 2:
+        strokeWeight(3);
+        if (hostile) {
+        } else {
+          stroke(map(velocity.mag(), 0, vel, 0, 210), 128, map(velocity.mag(), 10, 0, 255, 0));
+        }
+        break;
       }
-      break;
+      line(position.x, position.y, position.x-velocity.x, position.y-velocity.y);
     }
-    line(position.x, position.y, position.x-velocity.x, position.y-velocity.y);
   }
 }
 public class Ship {
   PVector position, velocity, acceleration;
   float heading, health, shieldAlpha, shieldDiam, centrepetalVel, acc, mass;
   boolean newtonian = true;
-  int cooldown=0;
+  int cooldown1=0;
+  int cooldown2=0;
   Ship(float x, float y) {
     mass = 5000;
     acc=0.4f;
@@ -401,29 +410,35 @@ public class Ship {
   }
   public void update() {
     PVector difference = new PVector(mouseX-width/2, mouseY-height/2);
-    if (cooldown>0) {
-      cooldown--;
+    if (cooldown1>0) {
+      cooldown1--;
+    }
+    if(cooldown2>0){
+      cooldown2--;
     }
     if (mousePressed) {
       if (leftgun) {
-        if (cooldown<=0) {
+        if (cooldown1<=0) {
           // laser.play();
           //laser.rewind();
           for (int i=0; i<1; i++) {
             bullets.add(new Bullet(500+random(-200, 200)+velocity.mag(), velocity.x, velocity.y, 2, difference.heading()+0.03f*randomGaussian(), ship.position.x, ship.position.y, false, 1));
           }
-          cooldown=1;
+          cooldown1=2;
           //bullets.add(new Bullet(20+ship.velocity.mag(), ship.heading+random(-PI/32, PI/32), ship.position.x, ship.position.y, false, 1));
         }
       }
-      if (rightgun) {
-        if (frames%10==0) {
-          //minigun.play();
-          // minigun.rewind();
+      if (mousePressed) {
+        if (rightgun) {
+          if (cooldown2<=0) {
+            //minigun.play();
+            // minigun.rewind();
 
-          //difference.sub(this.position);
-          bullets.add(new Bullet(velocity.mag()+150+random(-4, 4), 0, 0, 20, difference.heading()+randomGaussian()*PI/128, ship.position.x, ship.position.y, false, 2));
-          //bullets.add(new Bullet(60+ship.velocity.mag(), 0, 0, 0.5, difference.heading()+random(-PI/48, PI/48), ship.position.x, ship.position.y, false, 2));
+            //difference.sub(this.position);
+            bullets.add(new Bullet(velocity.mag()+250+random(-4, 4), 0, 0, 20, difference.heading()+randomGaussian()*PI/128, ship.position.x, ship.position.y, false, 2));
+            cooldown2=30;
+            //bullets.add(new Bullet(60+ship.velocity.mag(), 0, 0, 0.5, difference.heading()+random(-PI/48, PI/48), ship.position.x, ship.position.y, false, 2));
+          }
         }
       }
     }
@@ -490,8 +505,8 @@ public class Ship {
               sparkfx.spawn(position.x, position.y, random(2*PI), random(0, 64), 0.6f);
             }
           }
-          for (int l=0; l<b.velocity.mag()*5; l++) {
-            sparkfx.spawn(position.x, position.y, b.velocity.heading()+random(-1, 1)/b.velocity.magSq(), random(0, b.velocity.mag()/5), map(b.velocity.mag(), 0, b.vel, 0, 0.9f));
+          for (int l=0; l<b.velocity.mag()*b.mass; l++) {
+            sparkfx.spawn(position.x, position.y, b.velocity.heading()+2/b.velocity.magSq(), random(0, b.velocity.mag()), map(b.velocity.mag(), 0, b.vel, 0, 0.9f));
           }
           if (bullets.get(i).type!=0) {
             bullets.remove(i);
@@ -650,7 +665,7 @@ class SparkFX {
       a.setMag(random(0.2f));
       v.add(a);
       p.add(PVector.mult(v, tick));
-      v.mult(.99f);
+      v.mult(.97f);
       if (onScreen(p.x, p.y)) {
         stroke(lerpColor(c, color(0, 1, 1, 0.5f), map(v.mag(), V, 0, 0, 1)));
         line(p.x, p.y, p.x-v.x, p.y-v.y);

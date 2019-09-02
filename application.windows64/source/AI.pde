@@ -2,7 +2,7 @@ class AI {
   color a;
   PVector position, velocity, acceleration;
   PVector difference;
-  float diam, health, sat,mass,density;
+  float diam, health, sat, mass, density;
   Bullet B;
   AI(float x, float y, float D_) {
     density = 10000;
@@ -16,7 +16,7 @@ class AI {
     colorMode(HSB, 255);
     a = color(100, 255, 255);
   }
-    float targetBearing(Ship target, float pV) {
+  float targetBearing(Ship target, float pV) {
     PVector d = PVector.sub(target.position, position);
     float t = PVector.div(d, pV).mag();
     PVector h = PVector.add(target.position, PVector.mult(PVector.sub(target.velocity, velocity), t));
@@ -61,8 +61,8 @@ class AI {
         if ((distBullet<diam)&&b.ai!=this) {
           B = bullets.get(i);
           health-=b.velocity.mag()*bullets.get(i).mass;
-          for (int k=0; k<b.velocity.mag(); k++) {
-            sparkfx.spawn(position.x, position.y, B.velocity.heading()+random(-1,1)/B.velocity.magSq(), random(0, b.velocity.mag()/5), map(B.velocity.mag(), 0, b.vel, 0, 0.9));
+          for (int k=0; k<b.velocity.mag()*b.mass*0.5; k++) {
+            sparkfx.spawn(position.x, position.y, B.velocity.heading()+random(-1, 1)/B.velocity.magSq(), random(0, b.velocity.mag()/5), map(B.velocity.mag(), 0, b.vel, 0, 0.9));
           }
           if (bullets.get(i).type!=1) {
             bullets.remove(i);
@@ -84,27 +84,29 @@ class AI {
     }
   }
   void display() {
-    colorMode(HSB, 255);
-    strokeWeight(map(sat, 0, 255, 3, 2));
-    stroke(100, sat, 255);
-    pushMatrix();
-    translate(position.x, position.y);
-    fill(100, 255, 255, 128);
-    text((int)health, diam, diam);
-    rotate(velocity.heading()-PI/2);
-    fill(100, 255, 0, 64);
-    stroke(a);
-    beginShape();
-    vertex(0,0);
-    vertex(diam/2,diam/2);
-    vertex(diam/3,-diam/3);
-    vertex(0,0);
-    vertex(-diam/3,-diam/3);
-    vertex(-diam/2,diam/2);
-    vertex(0,0);
-    endShape();
-    noFill();
-    popMatrix();
-    //ellipse(position.x, position.y, diam, diam);
+    if (onScreen(position.x, position.y)) {
+      colorMode(HSB, 255);
+      strokeWeight(map(sat, 0, 255, 3, 2));
+      stroke(100, sat, 255);
+      pushMatrix();
+      translate(position.x, position.y);
+      fill(100, 255, 255, 128);
+      text((int)health, diam, diam);
+      rotate(velocity.heading()-PI/2);
+      fill(100, 255, 0, 64);
+      stroke(a);
+      beginShape();
+      vertex(0, 0);
+      vertex(diam/2, diam/2);
+      vertex(diam/3, -diam/3);
+      vertex(0, 0);
+      vertex(-diam/3, -diam/3);
+      vertex(-diam/2, diam/2);
+      vertex(0, 0);
+      endShape();
+      noFill();
+      popMatrix();
+      //ellipse(position.x, position.y, diam, diam);
+    }
   }
 }

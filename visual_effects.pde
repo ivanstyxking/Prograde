@@ -98,7 +98,7 @@ class SparkFX {
       a.setMag(random(0.2));
       v.add(a);
       p.add(PVector.mult(v, tick));
-      v.mult(.99);
+      v.mult(.97);
       if (onScreen(p.x, p.y)) {
         stroke(lerpColor(c, color(0, 1, 1, 0.5), map(v.mag(), V, 0, 0, 1)));
         line(p.x, p.y, p.x-v.x, p.y-v.y);

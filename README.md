@@ -1,2 +1,4 @@
-# Retrograde
-2D physics based space shooter inspired by geometry wars
+# Prograde
+2D shooter with realistic space physics for movement and weapons! 
+
+Originally inspired by Geometry Wars (retro evolved). 

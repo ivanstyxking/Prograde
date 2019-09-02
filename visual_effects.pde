@@ -94,6 +94,7 @@ class SparkFX {
       }
     }
     void update() {
+      colorMode(HSB,1);
       a = PVector.fromAngle(v.heading()-randomGaussian()*PI);
       a.setMag(random(0.2));
       v.add(a);
@@ -124,6 +125,7 @@ class SparkFX {
           p.x=v.x/2;
         }
       }
+      colorMode(RGB,255);
     }
   }
 }

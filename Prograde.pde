@@ -48,7 +48,7 @@ void draw() {
   stroke(255);
   noFill();
   strokeWeight(2);
-    colorMode(RGB, 255);
+  colorMode(RGB, 255);
   stroke(0,64,64,128);
   rect(0, 0, arenaWidth, arenaHeight);
   strokeWeight(1);

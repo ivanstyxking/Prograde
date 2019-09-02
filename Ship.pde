@@ -47,7 +47,7 @@ public class Ship {
 
             //difference.sub(this.position);
             bullets.add(new Bullet(velocity.mag()+250+random(-4, 4), 0, 0, 20, difference.heading()+randomGaussian()*PI/128, ship.position.x, ship.position.y, false, 2));
-            cooldown2=30;
+            cooldown2=23;
             //bullets.add(new Bullet(60+ship.velocity.mag(), 0, 0, 0.5, difference.heading()+random(-PI/48, PI/48), ship.position.x, ship.position.y, false, 2));
           }
         }

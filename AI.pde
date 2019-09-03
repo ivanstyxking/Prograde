@@ -62,7 +62,7 @@ class AI {
           B = bullets.get(i);
           health-=b.velocity.mag()*bullets.get(i).mass;
           for (int k=0; k<b.velocity.mag()*b.mass*0.5; k++) {
-            sparkfx.spawn(position.x, position.y, B.velocity.heading()+random(-1, 1)/B.velocity.magSq(), random(0, b.velocity.mag()/5), map(B.velocity.mag(), 0, b.vel, 0, 0.9));
+            sparkfx.spawn(position.x, position.y, B.velocity.heading()+randomGaussian()/B.velocity.mag(), random(0, b.velocity.mag()/5), map(B.velocity.mag(), 0, b.vel, 0, 0.9));
           }
           if (bullets.get(i).type!=1) {
             bullets.remove(i);

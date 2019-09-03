@@ -16,6 +16,7 @@ class Star {
       pushMatrix();
       //scale(p.z);
       stroke(c);
+      point(x1,y1);
       line(x1, y1, x1-ship.velocity.x, y1-ship.velocity.y);
 
       popMatrix();

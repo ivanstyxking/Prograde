@@ -12,7 +12,9 @@ ArrayList<Star> stars = new ArrayList<Star>();
 float arenaWidth, arenaHeight;
 float tick = 1;
 float zoom = 1;
+PImage background;
 void setup() {
+  background = loadImage("background.png");
   //videoExport = new VideoExport(this);
   noCursor();
   arenaHeight=20000;
@@ -35,11 +37,11 @@ int frames =0;
 float delta, t1, t2;
 ;
 void draw() {
+   image(background,0,0);
   pushMatrix();
   pushMatrix();
-  translate(zoom*-ship.position.x+width/2, zoom*-ship.position.y+height/2);
+  translate(zoom*(-ship.position.x-5*ship.velocity.x)+width/2, zoom*(-ship.position.y-5*ship.velocity.y)+height/2);
   scale(zoom);
-  background(0);
   rect(0,0,arenaWidth,arenaHeight);
   for (int i=0; i<stars.size(); i++) {
     Star star = stars.get(i);
@@ -48,7 +50,7 @@ void draw() {
   stroke(255);
   noFill();
   strokeWeight(2);
-    colorMode(RGB, 255);
+  colorMode(RGB, 255);
   stroke(0,64,64,128);
   rect(0, 0, arenaWidth, arenaHeight);
   strokeWeight(1);
@@ -87,16 +89,10 @@ void draw() {
   frames++;
   //videoExport.saveFrame();
 }
-float smoothing(float start, float end, float change) {
-  float dy = end-start;
-  if (abs(dy)>0) {
-    start+=dy*change;
-  }
-  return start;
-}
 
 boolean up, down, left, right;
 boolean [] keys = new boolean [128];
+
 void keyPressed() {
   key = Character.toLowerCase(key);
   if (key == 'q') {

@@ -28,7 +28,9 @@ ArrayList<Star> stars = new ArrayList<Star>();
 float arenaWidth, arenaHeight;
 float tick = 1;
 float zoom = 1;
+PImage background;
 public void setup() {
+  background = loadImage("background.png");
   //videoExport = new VideoExport(this);
   noCursor();
   arenaHeight=20000;
@@ -51,11 +53,11 @@ int frames =0;
 float delta, t1, t2;
 ;
 public void draw() {
+   image(background,0,0);
   pushMatrix();
   pushMatrix();
-  translate(zoom*-ship.position.x+width/2, zoom*-ship.position.y+height/2);
+  translate(zoom*(-ship.position.x-5*ship.velocity.x)+width/2, zoom*(-ship.position.y-5*ship.velocity.y)+height/2);
   scale(zoom);
-  background(0);
   rect(0,0,arenaWidth,arenaHeight);
   for (int i=0; i<stars.size(); i++) {
     Star star = stars.get(i);
@@ -64,7 +66,7 @@ public void draw() {
   stroke(255);
   noFill();
   strokeWeight(2);
-    colorMode(RGB, 255);
+  colorMode(RGB, 255);
   stroke(0,64,64,128);
   rect(0, 0, arenaWidth, arenaHeight);
   strokeWeight(1);
@@ -103,16 +105,10 @@ public void draw() {
   frames++;
   //videoExport.saveFrame();
 }
-public float smoothing(float start, float end, float change) {
-  float dy = end-start;
-  if (abs(dy)>0) {
-    start+=dy*change;
-  }
-  return start;
-}
 
 boolean up, down, left, right;
 boolean [] keys = new boolean [128];
+
 public void keyPressed() {
   key = Character.toLowerCase(key);
   if (key == 'q') {
@@ -240,7 +236,7 @@ class AI {
           B = bullets.get(i);
           health-=b.velocity.mag()*bullets.get(i).mass;
           for (int k=0; k<b.velocity.mag()*b.mass*0.5f; k++) {
-            sparkfx.spawn(position.x, position.y, B.velocity.heading()+random(-1, 1)/B.velocity.magSq(), random(0, b.velocity.mag()/5), map(B.velocity.mag(), 0, b.vel, 0, 0.9f));
+            sparkfx.spawn(position.x, position.y, B.velocity.heading()+randomGaussian()/B.velocity.mag(), random(0, b.velocity.mag()/5), map(B.velocity.mag(), 0, b.vel, 0, 0.9f));
           }
           if (bullets.get(i).type!=1) {
             bullets.remove(i);
@@ -326,7 +322,7 @@ class Bullet {
     position.add(velocity);
     if ((position.y>arenaHeight)||(position.y<0)) {
       for (int i=0; i<velocity.mag()/10; i++) {
-        sparkfx.spawn(position.x, position.y, random(2*PI), random(mass*velocity.mag()/20), map(velocity.mag(), 0, vel, 0, 0.9f));
+        sparkfx.spawn(position.x, position.y, random(2*PI), random(mass*velocity.mag()/30), map(velocity.mag(), 0, vel, 0, 0.9f));
       }
       if (position.y>arenaHeight) {
         position.y=arenaHeight+velocity.y/2;
@@ -362,9 +358,9 @@ class Bullet {
   public void display() {
     
     if (onScreen(position.x, position.y)) {
-      for (int i=0; i<velocity.mag()/100; i++) {
-        sparkfx.spawn(position.x, position.y, velocity.heading()+0.005f*random(-1,1), velocity.mag()*0.5f, map(velocity.mag(), 0, vel, 0, 0.9f));
-      }
+      //for (int i=0; i<velocity.mag()/100; i++) {
+      //  sparkfx.spawn(position.x, position.y, velocity.heading()+0.005*random(-1,1), velocity.mag()*0.5, map(velocity.mag(), 0, vel, 0, 0.9));
+      //}
       colorMode(HSB, 255);
       switch(type) {
       case 1:
@@ -386,6 +382,13 @@ class Bullet {
       line(position.x, position.y, position.x-velocity.x, position.y-velocity.y);
     }
   }
+}
+public float smoothing(float start, float end, float change) {
+  float dy = end-start;
+  if (abs(dy)>0) {
+    start+=dy*change;
+  }
+  return start;
 }
 public class Ship {
   PVector position, velocity, acceleration;
@@ -422,7 +425,7 @@ public class Ship {
           // laser.play();
           //laser.rewind();
           for (int i=0; i<1; i++) {
-            bullets.add(new Bullet(500+random(-200, 200)+velocity.mag(), velocity.x, velocity.y, 2, difference.heading()+0.03f*randomGaussian(), ship.position.x, ship.position.y, false, 1));
+            bullets.add(new Bullet(500+random(-200, 200)+velocity.mag(), velocity.x, velocity.y, 2, difference.heading()+0.03f*randomGaussian(), ship.position.x+ship.velocity.x*2, ship.position.y+ship.velocity.y*2, false, 1));
           }
           cooldown1=2;
           //bullets.add(new Bullet(20+ship.velocity.mag(), ship.heading+random(-PI/32, PI/32), ship.position.x, ship.position.y, false, 1));
@@ -435,8 +438,8 @@ public class Ship {
             // minigun.rewind();
 
             //difference.sub(this.position);
-            bullets.add(new Bullet(velocity.mag()+250+random(-4, 4), 0, 0, 20, difference.heading()+randomGaussian()*PI/128, ship.position.x, ship.position.y, false, 2));
-            cooldown2=30;
+            bullets.add(new Bullet(velocity.mag()+250+random(-4, 4), velocity.x, velocity.y, 30, difference.heading()+randomGaussian()*PI/128, ship.position.x+ship.velocity.x*2, ship.position.y+ship.velocity.y*2, false, 2));
+            cooldown2=23;
             //bullets.add(new Bullet(60+ship.velocity.mag(), 0, 0, 0.5, difference.heading()+random(-PI/48, PI/48), ship.position.x, ship.position.y, false, 2));
           }
         }
@@ -583,6 +586,7 @@ class Star {
       pushMatrix();
       //scale(p.z);
       stroke(c);
+      point(x1,y1);
       line(x1, y1, x1-ship.velocity.x, y1-ship.velocity.y);
 
       popMatrix();
@@ -661,6 +665,7 @@ class SparkFX {
       }
     }
     public void update() {
+      colorMode(HSB,1);
       a = PVector.fromAngle(v.heading()-randomGaussian()*PI);
       a.setMag(random(0.2f));
       v.add(a);
@@ -691,6 +696,7 @@ class SparkFX {
           p.x=v.x/2;
         }
       }
+      colorMode(RGB,255);
     }
   }
 }

@@ -16,6 +16,7 @@ class Star {
       pushMatrix();
       //scale(p.z);
       stroke(c);
+      point(x1,y1);
       line(x1, y1, x1-ship.velocity.x, y1-ship.velocity.y);
 
       popMatrix();
@@ -94,6 +95,7 @@ class SparkFX {
       }
     }
     void update() {
+      colorMode(HSB,1);
       a = PVector.fromAngle(v.heading()-randomGaussian()*PI);
       a.setMag(random(0.2));
       v.add(a);
@@ -124,6 +126,7 @@ class SparkFX {
           p.x=v.x/2;
         }
       }
+      colorMode(RGB,255);
     }
   }
 }

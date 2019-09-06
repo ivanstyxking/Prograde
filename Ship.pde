@@ -33,7 +33,7 @@ public class Ship {
           // laser.play();
           //laser.rewind();
           for (int i=0; i<1; i++) {
-            bullets.add(new Bullet(500+random(-200, 200)+velocity.mag(), velocity.x, velocity.y, 2, difference.heading()+0.03*randomGaussian(), ship.position.x+ship.velocity.x*2, ship.position.y+ship.velocity.y*2, false, 1));
+            bullets.add(new Bullet(500+random(-200, 200)+velocity.mag(), velocity.x, velocity.y, 1.5, difference.heading()+0.03*randomGaussian(), ship.position.x+ship.velocity.x*2, ship.position.y+ship.velocity.y*2, false, 1));
           }
           cooldown1=2;
           //bullets.add(new Bullet(20+ship.velocity.mag(), ship.heading+random(-PI/32, PI/32), ship.position.x, ship.position.y, false, 1));
@@ -46,7 +46,7 @@ public class Ship {
             // minigun.rewind();
 
             //difference.sub(this.position);
-            bullets.add(new Bullet(velocity.mag()+250+random(-4, 4), velocity.x, velocity.y, 30, difference.heading()+randomGaussian()*PI/128, ship.position.x+ship.velocity.x*2, ship.position.y+ship.velocity.y*2, false, 2));
+            bullets.add(new Bullet(velocity.mag()+250+random(-4, 4), velocity.x, velocity.y, 200, difference.heading()+randomGaussian()*PI/128, ship.position.x+ship.velocity.x*2, ship.position.y+ship.velocity.y*2, false, 2));
             cooldown2=23;
             //bullets.add(new Bullet(60+ship.velocity.mag(), 0, 0, 0.5, difference.heading()+random(-PI/48, PI/48), ship.position.x, ship.position.y, false, 2));
           }

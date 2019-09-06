@@ -36,7 +36,7 @@ class Bullet {
     position.add(velocity);
     if ((position.y>arenaHeight)||(position.y<0)) {
       for (int i=0; i<velocity.mag()/10; i++) {
-        sparkfx.spawn(position.x, position.y, random(2*PI), random(mass*velocity.mag()/30), map(velocity.mag(), 0, vel, 0, 0.9));
+        sparkfx.spawn(position.x, position.y, random(2*PI), random(velocity.mag()/30), map(velocity.mag(), 0, vel, 0, 0.9));
       }
       if (position.y>arenaHeight) {
         position.y=arenaHeight+velocity.y/2;
@@ -52,7 +52,7 @@ class Bullet {
     }
     if ((position.x>arenaWidth)||(position.x<0)) {
       for (int i=0; i<velocity.mag()/10; i++) {
-        sparkfx.spawn(position.x, position.y, random(2*PI), random(mass*velocity.mag()/20), map(velocity.mag(), 0, vel, 0, 0.9));
+        sparkfx.spawn(position.x, position.y, random(2*PI), random(velocity.mag()/30), map(velocity.mag(), 0, vel, 0, 0.9));
       }
       if (position.x>arenaWidth) {
         position.x=arenaWidth+velocity.x/2;
@@ -78,7 +78,7 @@ class Bullet {
       colorMode(HSB, 255);
       switch(type) {
       case 1:
-        strokeWeight(map(mass, 0, 30, 0.5, 5));
+        strokeWeight(map(mass, 0, 50, 3, 9));
         if (hostile) {
           stroke(map(velocity.mag(), 0, vel, 100, 0), 255, 255);
         } else {

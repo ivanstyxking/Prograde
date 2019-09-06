@@ -1,9 +1,8 @@
-//import ddf.minim.*;
+import ddf.minim.*;
 //Minim minim;
 //AudioPlayer laser;
 //AudioPlayer minigun;
 //import com.hamoid.*;
-
 //VideoExport videoExport;
 ArrayList<Bullet> bullets = new ArrayList<Bullet>();
 Ship ship;
@@ -13,6 +12,7 @@ float arenaWidth, arenaHeight;
 float tick = 1;
 float zoom = 1;
 PImage background;
+float cameraX, cameraY;
 void setup() {
   background = loadImage("background.png");
   //videoExport = new VideoExport(this);
@@ -37,8 +37,7 @@ int frames =0;
 float delta, t1, t2;
 ;
 void draw() {
-   image(background,0,0);
-  pushMatrix();
+  image(background,0,0);
   pushMatrix();
   translate(zoom*(-ship.position.x-5*ship.velocity.x)+width/2, zoom*(-ship.position.y-5*ship.velocity.y)+height/2);
   scale(zoom);
@@ -76,14 +75,14 @@ void draw() {
     enemy.update();
     enemy.display();
   }
-  if (random(100)<1 && enemies.size() < 1024) {
+  if (random(1000)<1 && enemies.size() < 1024) {
     enemies.add(new AI(random(0, arenaWidth), random(0, arenaHeight), random(6, 100)));
   }
   if (ship.health<=0) {
     ship = new Ship(arenaWidth/2, arenaHeight/2);
   }
   sparkfx.update();
-  popMatrix();
+   enemyRadar();
   popMatrix();
   retical();
   frames++;

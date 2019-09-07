@@ -1,5 +1,6 @@
 import ddf.minim.*;
-//Minim minim;
+Minim minim;
+AudioPlayer music;
 //AudioPlayer laser;
 //AudioPlayer minigun;
 //import com.hamoid.*;
@@ -19,7 +20,8 @@ void setup() {
   noCursor();
   arenaHeight=20000;
   arenaWidth=20000;
-  // minim = new Minim(this);
+  minim = new Minim(this);
+  music = minim.loadFile("Blueshifted.mp3");
   // laser = minim.loadFile("laser.wav");
   // minigun = minim.loadFile("laser2.wav");
   ship = new Ship(width/2, height/2);
@@ -32,6 +34,7 @@ void setup() {
   //enemies.add(new AI(random(0, width), random(0, height)));
   //frameRate(99999);
  //videoExport.startMovie();
+ music.loop();
 }
 int frames =0;
 float delta, t1, t2;

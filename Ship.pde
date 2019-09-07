@@ -64,10 +64,10 @@ public class Ship {
       heading+=centrepetalVel;
     } else {
       if (left) {
-        heading-=0.1;
+        heading-=0.05;
       }
       if (right) {
-        heading+=0.1;
+        heading+=0.05;
       }
     }
     acceleration = PVector.fromAngle(heading);

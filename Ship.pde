@@ -64,11 +64,13 @@ public class Ship {
       heading+=centrepetalVel;
     } else {
       if (left) {
-        heading-=0.05;
+        centrepetalVel-=0.005;
+      } else if (right) {
+        centrepetalVel+=0.005;
+      } else {
+        centrepetalVel*=0.9;
       }
-      if (right) {
-        heading+=0.05;
-      }
+      heading+=centrepetalVel;
     }
     acceleration = PVector.fromAngle(heading);
     if (up) {
@@ -134,7 +136,7 @@ public class Ship {
     }
     position.add(velocity);
     for (int i=0; i<10*acceleration.mag(); i++) {
-      sparkfx.spawn(position.x, position.y, heading-PI+random(-0.015, 0.015), 32*acceleration.mag()+random(-1, 1), 0.6);
+      sparkfx.vectorSpawn(position.x, position.y, PVector.add(velocity,PVector.mult(acceleration,-32)), 0.6);
     }
   }
   color a; 
@@ -144,7 +146,7 @@ public class Ship {
     pushMatrix();
     translate(position.x, position.y);
     fill(lerpColor(color(#00ff00), color(#ff0000), map(health, 10000, 0, 0, 1)));
-    text((int)map(health, 10000, 0, 100, 0)+"%", 10, 0);
+   // text((int)map(health, 10000, 0, 100, 0)+"%", 10, 0);
     noFill();
     stroke(lerpColor(b, a, map(health, 10000, 0, 1, 0)), shieldAlpha);
     rotate(heading-PI/2);

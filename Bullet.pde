@@ -71,7 +71,7 @@ class Bullet {
   }
   void display() {
     
-    if (onScreen(position.x, position.y)) {
+    if (onScreen(position.x, position.y)&&withinPlayspace(position.x,position.y)) {
       //for (int i=0; i<velocity.mag()/100; i++) {
       //  sparkfx.spawn(position.x, position.y, velocity.heading()+0.005*random(-1,1), velocity.mag()*0.5, map(velocity.mag(), 0, vel, 0, 0.9));
       //}

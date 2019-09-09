@@ -20,8 +20,8 @@ boolean [] keys = new boolean [128];
 void keyPressed() {
   key = Character.toLowerCase(key);
   if (key == 'q') {
-    videoExport.endMovie();
-    exit();
+    //videoExport.endMovie();
+    //exit();
   }
   if (key == 'w') {
     up = true;
@@ -79,4 +79,5 @@ void mouseReleased() {
 }
 void mouseWheel(MouseEvent e) {
   zoom = smoothing(zoom, zoom*pow(2, -e.getCount()), 0.2);
+  if(zoom>2){zoom=2;}
 }

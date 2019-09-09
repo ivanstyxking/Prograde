@@ -11,7 +11,7 @@ ArrayList<AI> enemies = new ArrayList<AI>();
 ArrayList<Star> stars = new ArrayList<Star>();
 float arenaWidth, arenaHeight;
 float tick = 1;
-float zoom = 1;
+float zoom = 2;
 PImage background;
 float cameraX, cameraY;
 void setup() {
@@ -33,7 +33,7 @@ void setup() {
   }
   //enemies.add(new AI(random(0, width), random(0, height)));
   //frameRate(99999);
- videoExport.startMovie();
+ //videoExport.startMovie();
  music.loop();
 }
 int frames =0;
@@ -95,5 +95,5 @@ void draw() {
   popMatrix();
   retical();
   frames++;
-  videoExport.saveFrame();
+  //videoExport.saveFrame();
 }

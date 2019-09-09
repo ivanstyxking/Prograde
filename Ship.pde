@@ -24,7 +24,7 @@ public class Ship {
     if (cooldown1>0) {
       cooldown1--;
     }
-    if(cooldown2>0){
+    if (cooldown2>0) {
       cooldown2--;
     }
     if (mousePressed) {
@@ -46,32 +46,21 @@ public class Ship {
             // minigun.rewind();
 
             //difference.sub(this.position);
-            bullets.add(new Bullet(velocity.mag()+250+random(-4, 4), velocity.x, velocity.y, 200, difference.heading()+randomGaussian()*PI/128, ship.position.x+ship.velocity.x*2, ship.position.y+ship.velocity.y*2, false, 2));
+            bullets.add(new Bullet(velocity.mag()+450+random(-4, 4), velocity.x, velocity.y, 200, difference.heading()+randomGaussian()*PI/512, ship.position.x+ship.velocity.x*2, ship.position.y+ship.velocity.y*2, false, 2));
             cooldown2=23;
             //bullets.add(new Bullet(60+ship.velocity.mag(), 0, 0, 0.5, difference.heading()+random(-PI/48, PI/48), ship.position.x, ship.position.y, false, 2));
           }
         }
       }
     }
-    if (newtonian) {
-      if (left) {
-        centrepetalVel-=0.002;
-      } else if (right) {
-        centrepetalVel+=0.002;
-      } else {
-        centrepetalVel*=0.9;
-      }
-      heading+=centrepetalVel;
+    if (left) {
+      centrepetalVel-=0.002;
+    } else if (right) {
+      centrepetalVel+=0.002;
     } else {
-      if (left) {
-        centrepetalVel-=0.005;
-      } else if (right) {
-        centrepetalVel+=0.005;
-      } else {
-        centrepetalVel*=0.9;
-      }
-      heading+=centrepetalVel;
+      centrepetalVel*=0.9;
     }
+    heading+=centrepetalVel;
     acceleration = PVector.fromAngle(heading);
     if (up) {
       acc=0.2;
@@ -135,8 +124,8 @@ public class Ship {
       shieldAlpha=0;
     }
     position.add(velocity);
-    for (int i=0; i<10*acceleration.mag(); i++) {
-      sparkfx.vectorSpawn(position.x, position.y, PVector.add(velocity,PVector.mult(acceleration,-32)), 0.6);
+    for (int i=0; i<16*acceleration.mag(); i++) {
+      sparkfx.vectorSpawn(position.x, position.y, PVector.add(velocity, PVector.mult(acceleration, -64)), 0.6);
     }
   }
   color a; 
@@ -146,7 +135,7 @@ public class Ship {
     pushMatrix();
     translate(position.x, position.y);
     fill(lerpColor(color(#00ff00), color(#ff0000), map(health, 10000, 0, 0, 1)));
-   // text((int)map(health, 10000, 0, 100, 0)+"%", 10, 0);
+    // text((int)map(health, 10000, 0, 100, 0)+"%", 10, 0);
     noFill();
     stroke(lerpColor(b, a, map(health, 10000, 0, 1, 0)), shieldAlpha);
     rotate(heading-PI/2);

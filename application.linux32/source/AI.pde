@@ -61,7 +61,7 @@ class AI {
         if ((distBullet<diam)&&b.ai!=this) {
           B = bullets.get(i);
           health-=b.velocity.mag()*bullets.get(i).mass;
-          for (int k=0; k<b.velocity.mag()*b.mass*0.5; k++) {
+          for (int k=0; k<b.velocity.mag()*b.mass*0.2; k++) {
             sparkfx.spawn(position.x, position.y, B.velocity.heading()+randomGaussian()/B.velocity.mag(), random(0, b.velocity.mag()/5), map(B.velocity.mag(), 0, b.vel, 0, 0.9));
           }
           if (bullets.get(i).type!=1) {
@@ -78,7 +78,7 @@ class AI {
     }
     if (health<0) {
       for (int i=0; i<sq(diam/2); i++) {
-        sparkfx.spawn(position.x, position.y, random(2*PI), random(0, 64), random(0.3));
+        sparkfx.vectorSpawn(position.x, position.y,velocity, 0.9);
       }
       enemies.remove(this);
     }

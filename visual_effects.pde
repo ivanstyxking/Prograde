@@ -101,8 +101,10 @@ class SparkFX {
       a = PVector.fromAngle(v.heading()-randomGaussian()*PI);
       a.setMag(random(0.2));
       v.add(a);
+      float gaus = noise(0.5*frames)-0.5+0.2*randomGaussian();
+      v.rotate(0.02*gaus);
       p.add(PVector.mult(v, tick));
-      v.mult(.97);
+      v.mult(.99-0.2*abs(gaus));
       
       if (onScreen(p.x, p.y)&&withinPlayspace(p.x,p.y)) {
         stroke(lerpColor(c, color(0, 1, 1, 0.5), map(v.mag(), V, 0, 0, 1)));

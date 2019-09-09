@@ -71,11 +71,13 @@ class SparkFX {
       }
     }
     Spark(float x, float y, PVector pV, float m_, float hue_) {
+      V = pV.mag();
       invMass = 1/(abs(m_+0.000000001f));
       colorMode(HSB, 1);
       c = color(hue_, 1, 1);
       p = new PVector(x, y);
       v = pV;
+      p.sub(v);
       if ((p.y>arenaHeight)||(p.y<0)) {
         if (p.y>arenaHeight) {
           p.y=arenaHeight+v.y/2;
@@ -99,11 +101,14 @@ class SparkFX {
       a = PVector.fromAngle(v.heading()-randomGaussian()*PI);
       a.setMag(random(0.2));
       v.add(a);
+      float gaus = noise(0.5*frames)-0.5+0.2*randomGaussian();
+      v.rotate(0.02*gaus);
       p.add(PVector.mult(v, tick));
-      v.mult(.97);
-      if (onScreen(p.x, p.y)) {
+      v.mult(.99-0.2*abs(gaus));
+      
+      if (onScreen(p.x, p.y)&&withinPlayspace(p.x,p.y)) {
         stroke(lerpColor(c, color(0, 1, 1, 0.5), map(v.mag(), V, 0, 0, 1)));
-        line(p.x, p.y, p.x-v.x, p.y-v.y);
+        line(p.x, p.y, p.x-(ship.velocity.x-v.x), p.y-(ship.velocity.y-v.y));
       }
       if (v.mag()<1) {
         parts.remove(this);
@@ -129,7 +134,4 @@ class SparkFX {
       colorMode(RGB,255);
     }
   }
-}
-boolean onScreen(float x, float y) {
-  return (abs(x-ship.position.x)<width/zoom && (abs(y-ship.position.y)<height/zoom));
 }

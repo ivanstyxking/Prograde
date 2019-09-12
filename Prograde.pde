@@ -13,7 +13,7 @@ float arenaWidth, arenaHeight;
 float tick = 1;
 float zoom = 2;
 PImage background;
-float cameraX, cameraY;
+float cameraX, cameraY, previousX, previousY;
 void setup() {
   background = loadImage("background.png");
   videoExport = new VideoExport(this);
@@ -21,20 +21,22 @@ void setup() {
   arenaHeight=20000;
   arenaWidth=20000;
   minim = new Minim(this);
-  music = minim.loadFile("Warp Factor Six.mp3");
+ //music = minim.loadFile("Warp Factor Six.mp3");
   // laser = minim.loadFile("laser.wav");
   // minigun = minim.loadFile("laser2.wav");
   ship = new Ship(width/2, height/2);
+  size(700,700,OPENGL);
+  surface.setResizable(true);
   //fullScreen(OPENGL);
-  fullScreen(OPENGL);
   frame.setResizable(true);
   for (int i=0; i<=5000; i++) {
-    stars.add(new Star(random(0, arenaWidth), random(0, arenaHeight), random(-20, 120)));
+    stars.add(new Star(random(0, arenaWidth), random(0, arenaHeight), random(-200, 190)));
   }
+  realVelocity= new PVector(0,0);
   //enemies.add(new AI(random(0, width), random(0, height)));
   //frameRate(99999);
  //videoExport.startMovie();
- music.loop();
+ //music.loop();
 }
 int frames =0;
 float delta, t1, t2;
@@ -42,9 +44,14 @@ float delta, t1, t2;
 void draw() {
   image(background,0,0);
   pushMatrix();
-  cameraX = -ship.position.x-5*ship.velocity.x;
-  cameraY = -ship.position.y-5*ship.velocity.y;
-  translate(zoom*cameraX+width/2, zoom*cameraY+height/2);
+  
+  previousX = cameraX; 
+  previousY = cameraY;
+ // cameraX = -ship.position.x-9*ship.velocity.x/zoom;
+  //cameraY = -ship.position.y-9*float(height)/float(width)*ship.velocity.y/zoom;
+  cameraX = smoothing(previousX,-ship.position.x-9*ship.velocity.x/zoom,0.2*zoom);
+  cameraY = smoothing(previousY,-ship.position.y-9*float(height)/float(width)*ship.velocity.y/zoom,0.25*zoom);
+  translate(zoom*previousX+width/2, zoom*previousY+height/2);
   scale(zoom);
   rect(0,0,arenaWidth,arenaHeight);
   for (int i=0; i<stars.size(); i++) {
@@ -88,12 +95,16 @@ void draw() {
     enemies.add(new AI(random(0, arenaWidth), random(0, arenaHeight), random(6, 100)));
   }
   if (ship.health<=0) {
+    for (int i=0; i<sq(ship.shieldDiam); i++) {
+        sparkfx.vectorSpawn(ship.position.x, ship.position.y,PVector.add(ship.velocity,PVector.fromAngle(random(2*PI)).setMag(random(256))), 0.7);
+      }
     ship = new Ship(arenaWidth/2, arenaHeight/2);
   }
   sparkfx.update();
    enemyRadar();
   popMatrix();
   retical();
+  shipDataUI();
   frames++;
   //videoExport.saveFrame();
 }

@@ -78,6 +78,7 @@ void mouseReleased() {
   }
 }
 void mouseWheel(MouseEvent e) {
-  zoom = smoothing(zoom, zoom*pow(2, -e.getCount()), 0.2);
-  if(zoom>2){zoom=2;}
+  zoom = smoothing(zoom, zoom*pow(2, -e.getCount()), 0.1);
+  if(zoom>7){zoom=7;}
+  if(zoom<0.0625){zoom=0.0625;}
 }

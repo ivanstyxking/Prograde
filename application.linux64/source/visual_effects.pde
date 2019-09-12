@@ -11,13 +11,13 @@ class Star {
     x1 = p.x+(p.z*0.005*(ship.position.x-arenaWidth/2));
     y1 = p.y+(p.z*0.005*(ship.position.y-arenaHeight/2));
     if (onScreen(x1, y1)) {
-      strokeWeight(map(p.z, -20, 100, 3, 1));
+      strokeWeight(map(p.z, -20, 100, 5,2));
       stroke(255);
       pushMatrix();
       //scale(p.z);
       stroke(c);
       point(x1,y1);
-      line(x1, y1, x1-ship.velocity.x, y1-ship.velocity.y);
+      line(x1, y1, x1-(cameraX-previousX), y1-(cameraY-previousY));
 
       popMatrix();
     }

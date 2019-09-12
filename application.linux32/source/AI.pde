@@ -2,7 +2,7 @@ class AI {
   color a;
   PVector position, velocity, acceleration;
   PVector difference;
-  float diam, health, sat, mass, density;
+  float diam, health, sat, mass, density, maxV;
   Bullet B;
   AI(float x, float y, float D_) {
     density = 10000;
@@ -78,7 +78,7 @@ class AI {
     }
     if (health<0) {
       for (int i=0; i<sq(diam/2); i++) {
-        sparkfx.vectorSpawn(position.x, position.y,velocity, 0.9);
+        sparkfx.vectorSpawn(position.x, position.y,PVector.add(velocity,PVector.fromAngle(random(2*PI)).setMag(random(128))), 0.9);
       }
       enemies.remove(this);
     }

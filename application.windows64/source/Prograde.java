@@ -32,7 +32,7 @@ float arenaWidth, arenaHeight;
 float tick = 1;
 float zoom = 2;
 PImage background;
-float cameraX, cameraY;
+float cameraX, cameraY, previousX, previousY;
 public void setup() {
   background = loadImage("background.png");
   videoExport = new VideoExport(this);
@@ -40,20 +40,22 @@ public void setup() {
   arenaHeight=20000;
   arenaWidth=20000;
   minim = new Minim(this);
-  music = minim.loadFile("Warp Factor Six.mp3");
+ //music = minim.loadFile("Warp Factor Six.mp3");
   // laser = minim.loadFile("laser.wav");
   // minigun = minim.loadFile("laser2.wav");
   ship = new Ship(width/2, height/2);
-  //
-  fullScreen(OPENGL);
+  
+  surface.setResizable(true);
+  //fullScreen(OPENGL);
   frame.setResizable(true);
   for (int i=0; i<=5000; i++) {
-    stars.add(new Star(random(0, arenaWidth), random(0, arenaHeight), random(-20, 120)));
+    stars.add(new Star(random(0, arenaWidth), random(0, arenaHeight), random(-200, 190)));
   }
+  realVelocity= new PVector(0,0);
   //enemies.add(new AI(random(0, width), random(0, height)));
   //frameRate(99999);
  //videoExport.startMovie();
- music.loop();
+ //music.loop();
 }
 int frames =0;
 float delta, t1, t2;
@@ -61,9 +63,14 @@ float delta, t1, t2;
 public void draw() {
   image(background,0,0);
   pushMatrix();
-  cameraX = -ship.position.x-5*ship.velocity.x;
-  cameraY = -ship.position.y-5*ship.velocity.y;
-  translate(zoom*cameraX+width/2, zoom*cameraY+height/2);
+  
+  previousX = cameraX; 
+  previousY = cameraY;
+ // cameraX = -ship.position.x-9*ship.velocity.x/zoom;
+  //cameraY = -ship.position.y-9*float(height)/float(width)*ship.velocity.y/zoom;
+  cameraX = smoothing(previousX,-ship.position.x-9*ship.velocity.x/zoom,0.2f*zoom);
+  cameraY = smoothing(previousY,-ship.position.y-9*PApplet.parseFloat(height)/PApplet.parseFloat(width)*ship.velocity.y/zoom,0.25f*zoom);
+  translate(zoom*previousX+width/2, zoom*previousY+height/2);
   scale(zoom);
   rect(0,0,arenaWidth,arenaHeight);
   for (int i=0; i<stars.size(); i++) {
@@ -107,12 +114,16 @@ public void draw() {
     enemies.add(new AI(random(0, arenaWidth), random(0, arenaHeight), random(6, 100)));
   }
   if (ship.health<=0) {
+    for (int i=0; i<sq(ship.shieldDiam); i++) {
+        sparkfx.vectorSpawn(ship.position.x, ship.position.y,PVector.add(ship.velocity,PVector.fromAngle(random(2*PI)).setMag(random(256))), 0.7f);
+      }
     ship = new Ship(arenaWidth/2, arenaHeight/2);
   }
   sparkfx.update();
    enemyRadar();
   popMatrix();
   retical();
+  shipDataUI();
   frames++;
   //videoExport.saveFrame();
 }
@@ -120,7 +131,7 @@ class AI {
   int a;
   PVector position, velocity, acceleration;
   PVector difference;
-  float diam, health, sat, mass, density;
+  float diam, health, sat, mass, density, maxV;
   Bullet B;
   AI(float x, float y, float D_) {
     density = 10000;
@@ -196,7 +207,7 @@ class AI {
     }
     if (health<0) {
       for (int i=0; i<sq(diam/2); i++) {
-        sparkfx.vectorSpawn(position.x, position.y,velocity, 0.9f);
+        sparkfx.vectorSpawn(position.x, position.y,PVector.add(velocity,PVector.fromAngle(random(2*PI)).setMag(random(128))), 0.9f);
       }
       enemies.remove(this);
     }
@@ -407,8 +418,9 @@ public void mouseReleased() {
   }
 }
 public void mouseWheel(MouseEvent e) {
-  zoom = smoothing(zoom, zoom*pow(2, -e.getCount()), 0.2f);
-  if(zoom>2){zoom=2;}
+  zoom = smoothing(zoom, zoom*pow(2, -e.getCount()), 0.1f);
+  if(zoom>7){zoom=7;}
+  if(zoom<0.0625f){zoom=0.0625f;}
 }
 public class Ship {
   PVector position, velocity, acceleration;
@@ -416,6 +428,8 @@ public class Ship {
   boolean newtonian = true;
   int cooldown1=0;
   int cooldown2=0;
+  float maxV=2400/24;
+  float maxA = 4.7f/(24);
   Ship(float x, float y) {
     mass = 5000;
     acc=0.4f;
@@ -475,7 +489,7 @@ public class Ship {
     heading+=centrepetalVel;
     acceleration = PVector.fromAngle(heading);
     if (up) {
-      acc=0.2f;
+      acc=maxA;
       acceleration.setMag(acc);
       acceleration.limit(10);
     } else {
@@ -485,10 +499,11 @@ public class Ship {
       }
     }
     if (down) {
-      velocity.mult(0.9f);
+      velocity.mult(0.98f);
+      acceleration.setMag(0.1f);
     }
     velocity.add(acceleration);
-    velocity.limit(64);
+    velocity.limit(maxV);
     float k = -0.2f;
     float mu = 0.9f;
     if (position.x>arenaWidth) {
@@ -514,6 +529,7 @@ public class Ship {
         distBullet = PVector.dist(this.position, PVector.sub(b.position, PVector.mult(b.velocity, map(j, 0, 96, 0, 1))));
         if ((distBullet<shieldDiam)&&b.ai!=null) {
           health-=b.velocity.mag()*bullets.get(i).mass;
+          ship.velocity.add(PVector.mult(b.velocity,b.mass/ship.mass));
           if (health<=0) {
             for (int q=0; q<128; q++) {
               sparkfx.spawn(position.x, position.y, random(2*PI), random(0, 64), 0.6f);
@@ -537,7 +553,7 @@ public class Ship {
     }
     position.add(velocity);
     for (int i=0; i<16*acceleration.mag(); i++) {
-      sparkfx.vectorSpawn(position.x, position.y, PVector.add(velocity, PVector.mult(acceleration, -64)), 0.6f);
+      sparkfx.vectorSpawn(position.x, position.y, PVector.add(velocity, PVector.mult(acceleration, -maxV)), 0.6f);
     }
   }
   int a; 
@@ -549,13 +565,14 @@ public class Ship {
     fill(lerpColor(color(0xff00ff00), color(0xffff0000), map(health, 10000, 0, 0, 1)));
     // text((int)map(health, 10000, 0, 100, 0)+"%", 10, 0);
     noFill();
-    stroke(lerpColor(b, a, map(health, 10000, 0, 1, 0)), shieldAlpha);
+    stroke(lerpColor(b, a, map(health, 10000, 0, 1, 0)), map(shieldAlpha,255,0,1,0));
     rotate(heading-PI/2);
     ellipse(0, 0, shieldDiam, shieldDiam);
     colorMode(RGB, 255);
     stroke(0, 200, 255);
-    beginShape();
-    vertex(0, 10);
+    
+    beginShape();//=============================================================================================================== SHIP
+    vertex(0, 10); 
     vertex(3, -14);
     vertex(10, -5);
     vertex(0, -10);
@@ -569,14 +586,27 @@ public class Ship {
     endShape(CLOSE);
     stroke(color(255, 0, 0, 128));
     line(0, 0, 0, 1000);
+    
+    //line(0,2.3175,0,-2.3175);//=============================================================================================================== length of f1 car
     popMatrix();
   }
 }
+float g = 9.80665f;
+PVector realVelocity;
 public void retical(){
   colorMode(RGB,255);
   stroke(0,200,255);
   line(mouseX-10,mouseY,mouseX+10,mouseY);
   line(mouseX,mouseY-10,mouseX,mouseY+10);
+}
+public void shipDataUI(){
+  realVelocity.set(24*ship.velocity.x,24*ship.velocity.y);
+  fill(0,200,255);
+  textSize(15);
+  text("position vector [x,y] = "+"["+nf(ship.position.x/1000,3,2)+"km] ["+nf(ship.position.y/1000,3,2)+"km]",width-350,height-45);
+  text("speed = "+nf(realVelocity.mag()*2.23693629f,2,3)+" mph",width-350,height-30);
+  text("acceleration (G) = "+nf(+24*ship.acceleration.mag()*g,0,2)+ " g's (Standard Gravity)",width-350, height - 15);
+  noFill();
 }
 public void enemyRadar(){
   colorMode(HSB,1);
@@ -599,13 +629,13 @@ class Star {
     x1 = p.x+(p.z*0.005f*(ship.position.x-arenaWidth/2));
     y1 = p.y+(p.z*0.005f*(ship.position.y-arenaHeight/2));
     if (onScreen(x1, y1)) {
-      strokeWeight(map(p.z, -20, 100, 3, 1));
+      strokeWeight(map(p.z, -20, 100, 5,2));
       stroke(255);
       pushMatrix();
       //scale(p.z);
       stroke(c);
       point(x1,y1);
-      line(x1, y1, x1-ship.velocity.x, y1-ship.velocity.y);
+      line(x1, y1, x1-(cameraX-previousX), y1-(cameraY-previousY));
 
       popMatrix();
     }
@@ -723,7 +753,7 @@ class SparkFX {
     }
   }
 }
-  public void settings() {  fullScreen(OPENGL); }
+  public void settings() {  size(700,700,OPENGL); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "Prograde" };
     if (passedArgs != null) {

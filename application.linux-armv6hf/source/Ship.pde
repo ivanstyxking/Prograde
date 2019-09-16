@@ -1,5 +1,5 @@
 public class Ship {
-  PVector position, velocity, acceleration;
+  PVector position, velocity, Pvelocity, acceleration, rAcc;
   float heading, health, shieldAlpha, shieldDiam, centrepetalVel, acc, mass;
   boolean newtonian = true;
   int cooldown1=0;
@@ -12,7 +12,9 @@ public class Ship {
     heading = 0;
     centrepetalVel = 0;
     acceleration = new PVector(0, 0);
+    rAcc = new PVector(0,0);
     velocity = new PVector(0, 0);
+    Pvelocity = new PVector(0,0);
     position = new PVector(x, y);
     health = 10000;
     shieldAlpha=0;
@@ -64,6 +66,7 @@ public class Ship {
     }
     heading+=centrepetalVel;
     acceleration = PVector.fromAngle(heading);
+    Pvelocity.set(velocity);
     if (up) {
       acc=maxA;
       acceleration.setMag(acc);
@@ -112,7 +115,7 @@ public class Ship {
             }
           }
           for (int l=0; l<b.velocity.mag()*b.mass; l++) {
-            sparkfx.spawn(position.x, position.y, b.velocity.heading()+2/b.velocity.magSq(), random(0, b.velocity.mag()), map(b.velocity.mag(), 0, b.vel, 0, 0.9));
+            sparkfx.spawn(position.x, position.y, b.velocity.heading()+2/b.velocity.magSq(), random(0, b.velocity.mag()), map(b.velocity.mag(), 0, b.vel, 0.9, 0));
           }
           if (bullets.get(i).type!=0) {
             bullets.remove(i);
@@ -128,6 +131,7 @@ public class Ship {
       shieldAlpha=0;
     }
     position.add(velocity);
+    rAcc = PVector.sub(velocity,Pvelocity);
     for (int i=0; i<16*acceleration.mag(); i++) {
       sparkfx.vectorSpawn(position.x, position.y, PVector.add(velocity, PVector.mult(acceleration, -maxV)), 0.6);
     }
@@ -161,7 +165,7 @@ public class Ship {
     vertex(-5, -3);
     endShape(CLOSE);
     stroke(color(255, 0, 0, 128));
-    line(0, 0, 0, 1000);
+    //line(0, 0, 0, 1000);
     
     //line(0,2.3175,0,-2.3175);//=============================================================================================================== length of f1 car
     popMatrix();

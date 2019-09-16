@@ -21,7 +21,7 @@ void keyPressed() {
   key = Character.toLowerCase(key);
   if (key == 'q') {
     //videoExport.endMovie();
-    //exit();
+   // exit();
   }
   if (key == 'w') {
     up = true;

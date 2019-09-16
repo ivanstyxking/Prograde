@@ -107,6 +107,7 @@ class SparkFX {
       v.mult(.99-0.2*abs(gaus));
       
       if (onScreen(p.x, p.y)&&withinPlayspace(p.x,p.y)) {
+        strokeWeight(1);
         stroke(lerpColor(c, color(0, 1, 1, 0.5), map(v.mag(), V, 0, 0, 1)));
         line(p.x, p.y, p.x-(ship.velocity.x-v.x), p.y-(ship.velocity.y-v.y));
       }

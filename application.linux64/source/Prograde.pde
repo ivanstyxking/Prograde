@@ -33,6 +33,7 @@ void setup() {
     stars.add(new Star(random(0, arenaWidth), random(0, arenaHeight), random(-200, 190)));
   }
   realVelocity= new PVector(0, 0);
+  shipTrail = new Trail();
   //enemies.add(new AI(random(0, width), random(0, height)));
   //frameRate(99999);
  // videoExport.startMovie();
@@ -100,6 +101,7 @@ void draw() {
     ship = new Ship(arenaWidth/2, arenaHeight/2);
   }
   sparkfx.update();
+  shipTrail.updateAndRender(ship.position,ship.heading);
   ship.display();
   enemyRadar();
   popMatrix();

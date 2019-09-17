@@ -55,14 +55,13 @@ class AI {
     }
     float distBullet;
     for (int i=0; i<bullets.size(); i++) {
-      Bullet b = bullets.get(i);
+       B = bullets.get(i);
       for (int j=0; j<96; j++) {
-        distBullet = PVector.dist(this.position, PVector.sub(b.position, PVector.mult(b.velocity, map(j, 0, 96, 0, 1))));
-        if ((distBullet<diam)&&b.ai!=this) {
-          B = bullets.get(i);
-          health-=b.velocity.mag()*bullets.get(i).mass;
-          for (int k=0; k<b.velocity.mag()*b.mass*0.2; k++) {
-            sparkfx.spawn(position.x, position.y, B.velocity.heading()+randomGaussian()/B.velocity.mag(), random(0, b.velocity.mag()/5), map(B.velocity.mag(), 0, b.vel, 0, 0.9));
+        distBullet = PVector.dist(this.position, PVector.sub(B.position, PVector.mult(B.velocity, map(j, 0, 96, 0, 1))));
+        if ((distBullet<diam)&&B.ai!=this) {
+          health-=B.velocity.mag()*B.mass;
+          for (int k=0; k<B.velocity.mag()*B.mass*0.2; k++) {
+            sparkfx.spawn(position.x, position.y, B.velocity.heading()+randomGaussian()/B.velocity.mag(), random(0, B.velocity.mag()/5), map(B.velocity.mag(), 0, B.vel, 0, 0.9));
           }
           if (bullets.get(i).type!=1) {
             bullets.remove(i);

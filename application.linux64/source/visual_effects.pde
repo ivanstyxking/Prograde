@@ -141,12 +141,12 @@ ArrayList<PVector []> trail;
 int tLen = 128;
 Trail shipTrail;
 class Trail {
-  Trail() {
+  Trail(PVector p) {
     trail = new ArrayList<PVector[]>();
     for (int i=0; i<tLen; i++) {
       trail.add(new PVector[2]);
-      trail.get(i)[0] = new PVector(0,0);
-      trail.get(i)[1] = new PVector(0,0);
+      trail.get(i)[0] = new PVector(p.x,p.y);
+      trail.get(i)[1] = new PVector(p.x,p.y);
     }
   }
   void updateAndRender(PVector p, float h) {

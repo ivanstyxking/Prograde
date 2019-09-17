@@ -36,8 +36,8 @@ public void setup() {
   background = loadImage("background.png");
   videoExport = new VideoExport(this);
   noCursor();
-  arenaHeight=20000;
-  arenaWidth=20000;
+  arenaHeight=100000;
+  arenaWidth=100000;
   //minim = new Minim(this);
   //music = minim.loadFile("Warp Factor Six.mp3");
   // laser = minim.loadFile("laser.wav");
@@ -51,15 +51,16 @@ public void setup() {
     stars.add(new Star(random(0, arenaWidth), random(0, arenaHeight), random(-200, 190)));
   }
   realVelocity= new PVector(0, 0);
-  shipTrail = new Trail();
+  shipTrail = new Trail(ship.position);
   //enemies.add(new AI(random(0, width), random(0, height)));
   //frameRate(99999);
  // videoExport.startMovie();
   //music.loop();
+  anomolies.add(new GravityWell(new PVector(arenaWidth/2,arenaHeight/2),20000000));
 }
 int frames =0;
 float delta, t1, t2;
-;
+
 public void draw() {
   image(background, 0, 0);
   pushMatrix();
@@ -68,10 +69,11 @@ public void draw() {
   previousY = cameraY;
   // cameraX = -ship.position.x-9*ship.velocity.x/zoom;
   //cameraY = -ship.position.y-9*float(height)/float(width)*ship.velocity.y/zoom;
-  cameraX = smoothing(previousX, -ship.position.x-9*ship.velocity.x/zoom, 0.2f*zoom);
-  cameraY = smoothing(previousY, -ship.position.y-9*PApplet.parseFloat(height)/PApplet.parseFloat(width)*ship.velocity.y/zoom, 0.25f*zoom);
+  cameraX = smoothing(previousX, -ship.position.x-9*ship.velocity.x/zoom, 0.3f*zoom);
+  cameraY = smoothing(previousY, -ship.position.y-9*PApplet.parseFloat(height)/PApplet.parseFloat(width)*ship.velocity.y/zoom, 0.3f*zoom);
   translate(zoom*previousX+width/2, zoom*previousY+height/2);
   scale(zoom);
+  fill(0,25,32,128);
   rect(0, 0, arenaWidth, arenaHeight);
   for (int i=0; i<stars.size(); i++) {
     Star star = stars.get(i);
@@ -95,6 +97,7 @@ public void draw() {
    for(int j=0;j<=arenaHeight;j+=32){
    line(0,j,arenaWidth,j);
    }*/
+   anomolies.get(0).update();
   for (int i=0; i<bullets.size(); i++) {
     Bullet b = bullets.get(i);
     b.update();
@@ -109,14 +112,14 @@ public void draw() {
     enemy.update();
     enemy.display();
   }
-  if (random(500)<1 && enemies.size() < 1024) {
+  if (random(0xFF)<1 && enemies.size() < 128) {
     enemies.add(new AI(random(0, arenaWidth), random(0, arenaHeight), random(6, 100)));
   }
   if (ship.health<=0) {
     for (int i=0; i<sq(ship.shieldDiam); i++) {
       sparkfx.vectorSpawn(ship.position.x, ship.position.y, PVector.add(ship.velocity, PVector.fromAngle(random(2*PI)).setMag(random(256))), 0.7f);
     }
-    ship = new Ship(arenaWidth/2, arenaHeight/2);
+    ship = new Ship(width/2, height/2);
   }
   sparkfx.update();
   shipTrail.updateAndRender(ship.position,ship.heading);
@@ -186,14 +189,13 @@ class AI {
     }
     float distBullet;
     for (int i=0; i<bullets.size(); i++) {
-      Bullet b = bullets.get(i);
+       B = bullets.get(i);
       for (int j=0; j<96; j++) {
-        distBullet = PVector.dist(this.position, PVector.sub(b.position, PVector.mult(b.velocity, map(j, 0, 96, 0, 1))));
-        if ((distBullet<diam)&&b.ai!=this) {
-          B = bullets.get(i);
-          health-=b.velocity.mag()*bullets.get(i).mass;
-          for (int k=0; k<b.velocity.mag()*b.mass*0.2f; k++) {
-            sparkfx.spawn(position.x, position.y, B.velocity.heading()+randomGaussian()/B.velocity.mag(), random(0, b.velocity.mag()/5), map(B.velocity.mag(), 0, b.vel, 0, 0.9f));
+        distBullet = PVector.dist(this.position, PVector.sub(B.position, PVector.mult(B.velocity, map(j, 0, 96, 0, 1))));
+        if ((distBullet<diam)&&B.ai!=this) {
+          health-=B.velocity.mag()*B.mass;
+          for (int k=0; k<B.velocity.mag()*B.mass*0.2f; k++) {
+            sparkfx.spawn(position.x, position.y, B.velocity.heading()+randomGaussian()/B.velocity.mag(), random(0, B.velocity.mag()/5), map(B.velocity.mag(), 0, B.vel, 0, 0.9f));
           }
           if (bullets.get(i).type!=1) {
             bullets.remove(i);
@@ -421,8 +423,45 @@ public void mouseReleased() {
 }
 public void mouseWheel(MouseEvent e) {
   zoom = smoothing(zoom, zoom*pow(2, -e.getCount()), 0.1f);
-  if(zoom>7){zoom=7;}
+  if(zoom>4){zoom=4;}
   if(zoom<0.0625f){zoom=0.0625f;}
+}
+float G = 0.01f;
+float c = 3*pow(10,8);
+ArrayList<GravityWell> anomolies = new ArrayList<GravityWell>();
+class GravityWell{
+  PVector position;
+  float mass,rad;
+  GravityWell(PVector location, float m){
+    position = new PVector(location.x,location.y);
+    mass = m;
+    rad = 0.5f*G*mass*0.01f;
+  }
+  public void update(){
+    PVector d = PVector.sub(position,ship.position);
+    if(d.mag()<rad){
+      mass+=ship.mass;
+      ship.die();
+      ship.health =0;
+    }
+    PVector a = PVector.fromAngle(d.heading()).setMag(G*mass/d.magSq());
+    ship.velocity.add(a);
+    
+    for(int i =0; i < bullets.size();i++){
+      Bullet b = bullets.get(i);
+      d =  PVector.sub(position, b.position);
+     if(d.mag()<rad){
+       mass+=0.5f*b.mass*b.velocity.magSq();
+       bullets.remove(b);
+     }
+      a.set(PVector.fromAngle(d.heading()).setMag(100*G*mass/d.magSq()));
+      b.velocity.add(a);
+    }
+    colorMode(HSB,1);
+    fill(0);
+    stroke(1,0,1);
+    ellipse(position.x,position.y,2*rad,2*rad);
+  }
 }
 public class Ship {
   PVector position, velocity, Pvelocity, acceleration, rAcc;
@@ -438,9 +477,9 @@ public class Ship {
     heading = 0;
     centrepetalVel = 0;
     acceleration = new PVector(0, 0);
-    rAcc = new PVector(0,0);
+    rAcc = new PVector(0, 0);
     velocity = new PVector(0, 0);
-    Pvelocity = new PVector(0,0);
+    Pvelocity = new PVector(0, 0);
     position = new PVector(x, y);
     health = 10000;
     shieldAlpha=0;
@@ -534,11 +573,9 @@ public class Ship {
         distBullet = PVector.dist(this.position, PVector.sub(b.position, PVector.mult(b.velocity, map(j, 0, 96, 0, 1))));
         if ((distBullet<shieldDiam)&&b.ai!=null) {
           health-=b.velocity.mag()*bullets.get(i).mass;
-          ship.velocity.add(PVector.mult(b.velocity,b.mass/ship.mass));
+          ship.velocity.add(PVector.mult(b.velocity, b.mass/ship.mass));
           if (health<=0) {
-            for (int q=0; q<128; q++) {
-              sparkfx.spawn(position.x, position.y, random(2*PI), random(0, 64), 0.6f);
-            }
+            die();
           }
           for (int l=0; l<b.velocity.mag()*b.mass; l++) {
             sparkfx.spawn(position.x, position.y, b.velocity.heading()+2/b.velocity.magSq(), random(0, b.velocity.mag()), map(b.velocity.mag(), 0, b.vel, 0.9f, 0));
@@ -557,13 +594,18 @@ public class Ship {
       shieldAlpha=0;
     }
     position.add(velocity);
-    rAcc = PVector.sub(velocity,Pvelocity);
-    for (int i=0; i<16*acceleration.mag(); i++) {
+    rAcc = PVector.sub(velocity, Pvelocity);
+    for (int i=0; i<16*rAcc.mag(); i++) {
       sparkfx.vectorSpawn(position.x, position.y, PVector.add(velocity, PVector.mult(acceleration, -maxV)), 0.6f);
     }
   }
   int a; 
   int b;
+  public void die() {
+    for (int q=0; q<128; q++) {
+      sparkfx.spawn(position.x, position.y, random(2*PI), random(0, 64), 0.6f);
+    }
+  }
   public void display() {
     strokeWeight(2);
     pushMatrix();
@@ -571,12 +613,13 @@ public class Ship {
     fill(lerpColor(color(0xff00ff00), color(0xffff0000), map(health, 10000, 0, 0, 1)));
     // text((int)map(health, 10000, 0, 100, 0)+"%", 10, 0);
     noFill();
-    stroke(lerpColor(b, a, map(health, 10000, 0, 1, 0)), map(shieldAlpha,255,0,1,0));
+    colorMode(HSB, 1);
+    stroke(lerpColor(b, a, map(health, 10000, 0, 1, 0)), map(shieldAlpha, 255, 0, 1, 0));
     rotate(heading-PI/2);
     ellipse(0, 0, shieldDiam, shieldDiam);
     colorMode(RGB, 255);
     stroke(0, 200, 255);
-    
+
     beginShape();//=============================================================================================================== SHIP
     vertex(0, 10); 
     vertex(3, -14);
@@ -592,7 +635,7 @@ public class Ship {
     endShape(CLOSE);
     stroke(color(255, 0, 0, 128));
     //line(0, 0, 0, 1000);
-    
+
     //line(0,2.3175,0,-2.3175);//=============================================================================================================== length of f1 car
     popMatrix();
   }
@@ -609,6 +652,7 @@ public void shipDataUI(){
   realVelocity.set(24*ship.velocity.x,24*ship.velocity.y);
   fill(0,200,255);
   textSize(15);
+  text("AI ships: "+enemies.size(),width-350,height-75);
   text("ship energy = "+ship.health,width-350,height-60);
   text("position vector [x,y] = "+"["+nf(ship.position.x/1000,3,2)+"km] ["+nf(ship.position.y/1000,3,2)+"km]",width-350,height-45);
   text("speed = "+nf(realVelocity.mag()*2.23693629f,4,2)+" mph (Mach "+nf(realVelocity.mag()/330F,0,2)+")",width-350,height-30);
@@ -773,12 +817,12 @@ ArrayList<PVector []> trail;
 int tLen = 128;
 Trail shipTrail;
 class Trail {
-  Trail() {
+  Trail(PVector p) {
     trail = new ArrayList<PVector[]>();
     for (int i=0; i<tLen; i++) {
       trail.add(new PVector[2]);
-      trail.get(i)[0] = new PVector(0,0);
-      trail.get(i)[1] = new PVector(0,0);
+      trail.get(i)[0] = new PVector(p.x,p.y);
+      trail.get(i)[1] = new PVector(p.x,p.y);
     }
   }
   public void updateAndRender(PVector p, float h) {

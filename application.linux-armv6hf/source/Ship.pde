@@ -12,9 +12,9 @@ public class Ship {
     heading = 0;
     centrepetalVel = 0;
     acceleration = new PVector(0, 0);
-    rAcc = new PVector(0,0);
+    rAcc = new PVector(0, 0);
     velocity = new PVector(0, 0);
-    Pvelocity = new PVector(0,0);
+    Pvelocity = new PVector(0, 0);
     position = new PVector(x, y);
     health = 10000;
     shieldAlpha=0;
@@ -108,11 +108,9 @@ public class Ship {
         distBullet = PVector.dist(this.position, PVector.sub(b.position, PVector.mult(b.velocity, map(j, 0, 96, 0, 1))));
         if ((distBullet<shieldDiam)&&b.ai!=null) {
           health-=b.velocity.mag()*bullets.get(i).mass;
-          ship.velocity.add(PVector.mult(b.velocity,b.mass/ship.mass));
+          ship.velocity.add(PVector.mult(b.velocity, b.mass/ship.mass));
           if (health<=0) {
-            for (int q=0; q<128; q++) {
-              sparkfx.spawn(position.x, position.y, random(2*PI), random(0, 64), 0.6);
-            }
+            die();
           }
           for (int l=0; l<b.velocity.mag()*b.mass; l++) {
             sparkfx.spawn(position.x, position.y, b.velocity.heading()+2/b.velocity.magSq(), random(0, b.velocity.mag()), map(b.velocity.mag(), 0, b.vel, 0.9, 0));
@@ -131,13 +129,18 @@ public class Ship {
       shieldAlpha=0;
     }
     position.add(velocity);
-    rAcc = PVector.sub(velocity,Pvelocity);
-    for (int i=0; i<16*acceleration.mag(); i++) {
+    rAcc = PVector.sub(velocity, Pvelocity);
+    for (int i=0; i<16*rAcc.mag(); i++) {
       sparkfx.vectorSpawn(position.x, position.y, PVector.add(velocity, PVector.mult(acceleration, -maxV)), 0.6);
     }
   }
   color a; 
   color b;
+  void die() {
+    for (int q=0; q<128; q++) {
+      sparkfx.spawn(position.x, position.y, random(2*PI), random(0, 64), 0.6);
+    }
+  }
   void display() {
     strokeWeight(2);
     pushMatrix();
@@ -145,12 +148,13 @@ public class Ship {
     fill(lerpColor(color(#00ff00), color(#ff0000), map(health, 10000, 0, 0, 1)));
     // text((int)map(health, 10000, 0, 100, 0)+"%", 10, 0);
     noFill();
-    stroke(lerpColor(b, a, map(health, 10000, 0, 1, 0)), map(shieldAlpha,255,0,1,0));
+    colorMode(HSB, 1);
+    stroke(lerpColor(b, a, map(health, 10000, 0, 1, 0)), map(shieldAlpha, 255, 0, 1, 0));
     rotate(heading-PI/2);
     ellipse(0, 0, shieldDiam, shieldDiam);
     colorMode(RGB, 255);
     stroke(0, 200, 255);
-    
+
     beginShape();//=============================================================================================================== SHIP
     vertex(0, 10); 
     vertex(3, -14);
@@ -166,7 +170,7 @@ public class Ship {
     endShape(CLOSE);
     stroke(color(255, 0, 0, 128));
     //line(0, 0, 0, 1000);
-    
+
     //line(0,2.3175,0,-2.3175);//=============================================================================================================== length of f1 car
     popMatrix();
   }

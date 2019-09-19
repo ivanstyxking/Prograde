@@ -13,7 +13,7 @@ void shipDataUI(){
   text("AI ships: "+enemies.size(),width-350,height-75);
   text("ship energy = "+ship.health,width-350,height-60);
   text("position vector [x,y] = "+"["+nf(ship.position.x/1000,3,2)+"km] ["+nf(ship.position.y/1000,3,2)+"km]",width-350,height-45);
-  text("speed = "+nf(realVelocity.mag()*2.23693629,4,2)+" mph (Mach "+nf(realVelocity.mag()/330F,0,2)+")",width-350,height-30);
+  text("speed = "+nf(realVelocity.mag()*2.23693629,4,2)+" mph (Mach "+nf(realVelocity.mag()/343F,0,2)+")",width-350,height-30);
   text("acceleration (G) = "+nf(+24*ship.rAcc.mag()*g,0,2)+ " g's (Standard Gravity)",width-350, height - 15);
   noFill();
 }

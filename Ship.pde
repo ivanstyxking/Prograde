@@ -4,7 +4,7 @@ public class Ship {
   boolean newtonian = true;
   int cooldown1=0;
   int cooldown2=0;
-  float maxV=2400/24;
+  float maxV=3430F/24;
   float maxA = 4.7/(24);
   Ship(float x, float y) {
     mass = 5000;

@@ -24,7 +24,7 @@ void setup() {
   //music = minim.loadFile("Warp Factor Six.mp3");
   // laser = minim.loadFile("laser.wav");
   // minigun = minim.loadFile("laser2.wav");
-  ship = new Ship(width/2, height/2);
+  ship = new Ship(arenaWidth/2, arenaHeight/2-5000);
   size(1280, 720, OPENGL);
   surface.setResizable(true);
   //fullScreen(OPENGL);
@@ -38,7 +38,7 @@ void setup() {
   //frameRate(99999);
  // videoExport.startMovie();
   //music.loop();
-  anomolies.add(new GravityWell(new PVector(arenaWidth/2,arenaHeight/2),20000000));
+  anomolies.add(new GravityWell(new PVector(arenaWidth/2,arenaHeight/2),10000000000000L));
 }
 int frames =0;
 float delta, t1, t2;
@@ -94,14 +94,14 @@ void draw() {
     enemy.update();
     enemy.display();
   }
-  if (random(0xFF)<1 && enemies.size() < 128) {
+  if (random(0xFF)<1 && enemies.size() < 64) {
     enemies.add(new AI(random(0, arenaWidth), random(0, arenaHeight), random(6, 100)));
   }
   if (ship.health<=0) {
     for (int i=0; i<sq(ship.shieldDiam); i++) {
       sparkfx.vectorSpawn(ship.position.x, ship.position.y, PVector.add(ship.velocity, PVector.fromAngle(random(2*PI)).setMag(random(256))), 0.7);
     }
-    ship = new Ship(width/2, height/2);
+    ship =new Ship(arenaWidth/2, arenaHeight/2-5000);
   }
   sparkfx.update();
   shipTrail.updateAndRender(ship.position,ship.heading);

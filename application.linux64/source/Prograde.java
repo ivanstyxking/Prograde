@@ -42,7 +42,7 @@ public void setup() {
   //music = minim.loadFile("Warp Factor Six.mp3");
   // laser = minim.loadFile("laser.wav");
   // minigun = minim.loadFile("laser2.wav");
-  ship = new Ship(width/2, height/2);
+  ship = new Ship(arenaWidth/2, arenaHeight/2-5000);
   
   surface.setResizable(true);
   //fullScreen(OPENGL);
@@ -56,7 +56,7 @@ public void setup() {
   //frameRate(99999);
  // videoExport.startMovie();
   //music.loop();
-  anomolies.add(new GravityWell(new PVector(arenaWidth/2,arenaHeight/2),20000000));
+  anomolies.add(new GravityWell(new PVector(arenaWidth/2,arenaHeight/2),10000000000000L));
 }
 int frames =0;
 float delta, t1, t2;
@@ -112,14 +112,14 @@ public void draw() {
     enemy.update();
     enemy.display();
   }
-  if (random(0xFF)<1 && enemies.size() < 128) {
+  if (random(0xFF)<1 && enemies.size() < 64) {
     enemies.add(new AI(random(0, arenaWidth), random(0, arenaHeight), random(6, 100)));
   }
   if (ship.health<=0) {
     for (int i=0; i<sq(ship.shieldDiam); i++) {
       sparkfx.vectorSpawn(ship.position.x, ship.position.y, PVector.add(ship.velocity, PVector.fromAngle(random(2*PI)).setMag(random(256))), 0.7f);
     }
-    ship = new Ship(width/2, height/2);
+    ship =new Ship(arenaWidth/2, arenaHeight/2-5000);
   }
   sparkfx.update();
   shipTrail.updateAndRender(ship.position,ship.heading);
@@ -426,16 +426,18 @@ public void mouseWheel(MouseEvent e) {
   if(zoom>4){zoom=4;}
   if(zoom<0.0625f){zoom=0.0625f;}
 }
-float G = 0.01f;
-float c = 3*pow(10,8);
+float G = 6.67430f*pow(10,-8);
+float c = 100;//3*pow(10,8);
 ArrayList<GravityWell> anomolies = new ArrayList<GravityWell>();
 class GravityWell{
   PVector position;
-  float mass,rad;
-  GravityWell(PVector location, float m){
+  float rad;
+  long mass;
+  GravityWell(PVector location, long m){
     position = new PVector(location.x,location.y);
     mass = m;
-    rad = 0.5f*G*mass*0.01f;
+    rad = 0.5f*G*mass/sq(c);
+    println(G);
   }
   public void update(){
     PVector d = PVector.sub(position,ship.position);
@@ -454,8 +456,17 @@ class GravityWell{
        mass+=0.5f*b.mass*b.velocity.magSq();
        bullets.remove(b);
      }
-      a.set(PVector.fromAngle(d.heading()).setMag(100*G*mass/d.magSq()));
+      a.set(PVector.fromAngle(d.heading()).setMag(G*mass/d.magSq()));
       b.velocity.add(a);
+    }
+    for(int i=0;i < sparkfx.parts.size();i++){
+      SparkFX.Spark spark = sparkfx.parts.get(i);
+      d = PVector.sub(position, spark.p);
+      if(d.mag()<rad){
+        sparkfx.parts.remove(i);
+      }
+      a.set(PVector.fromAngle(d.heading()).setMag(G*mass/d.magSq()));
+      spark.v.add(a);
     }
     colorMode(HSB,1);
     fill(0);
@@ -469,7 +480,7 @@ public class Ship {
   boolean newtonian = true;
   int cooldown1=0;
   int cooldown2=0;
-  float maxV=2400/24;
+  float maxV=3430F/24;
   float maxA = 4.7f/(24);
   Ship(float x, float y) {
     mass = 5000;
@@ -655,7 +666,7 @@ public void shipDataUI(){
   text("AI ships: "+enemies.size(),width-350,height-75);
   text("ship energy = "+ship.health,width-350,height-60);
   text("position vector [x,y] = "+"["+nf(ship.position.x/1000,3,2)+"km] ["+nf(ship.position.y/1000,3,2)+"km]",width-350,height-45);
-  text("speed = "+nf(realVelocity.mag()*2.23693629f,4,2)+" mph (Mach "+nf(realVelocity.mag()/330F,0,2)+")",width-350,height-30);
+  text("speed = "+nf(realVelocity.mag()*2.23693629f,4,2)+" mph (Mach "+nf(realVelocity.mag()/343F,0,2)+")",width-350,height-30);
   text("acceleration (G) = "+nf(+24*ship.rAcc.mag()*g,0,2)+ " g's (Standard Gravity)",width-350, height - 15);
   noFill();
 }

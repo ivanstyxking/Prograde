@@ -1,13 +1,15 @@
-float G = 0.01;
-float c = 3*pow(10,8);
+float G = 6.67430*pow(10,-8);
+float c = 100;//3*pow(10,8);
 ArrayList<GravityWell> anomolies = new ArrayList<GravityWell>();
 class GravityWell{
   PVector position;
-  float mass,rad;
-  GravityWell(PVector location, float m){
+  float rad;
+  long mass;
+  GravityWell(PVector location, long m){
     position = new PVector(location.x,location.y);
     mass = m;
-    rad = 0.5*G*mass*0.01;
+    rad = 0.5*G*mass/sq(c);
+    println(G);
   }
   void update(){
     PVector d = PVector.sub(position,ship.position);
@@ -26,8 +28,17 @@ class GravityWell{
        mass+=0.5*b.mass*b.velocity.magSq();
        bullets.remove(b);
      }
-      a.set(PVector.fromAngle(d.heading()).setMag(100*G*mass/d.magSq()));
+      a.set(PVector.fromAngle(d.heading()).setMag(G*mass/d.magSq()));
       b.velocity.add(a);
+    }
+    for(int i=0;i < sparkfx.parts.size();i++){
+      SparkFX.Spark spark = sparkfx.parts.get(i);
+      d = PVector.sub(position, spark.p);
+      if(d.mag()<rad){
+        sparkfx.parts.remove(i);
+      }
+      a.set(PVector.fromAngle(d.heading()).setMag(G*mass/d.magSq()));
+      spark.v.add(a);
     }
     colorMode(HSB,1);
     fill(0);
